@@ -13,15 +13,14 @@ module Interactor
     end
   end
 
-  # def fail!(failure_attributes = {})
-  #   # Make sure we have all required attributes
-  #   missing_attrs = self.class.failure_attributes
-  #                     .reject { |failure_attr| failure_attributes.key?(failure_attr) }
-  #   raise "Missing failure attrs: #{missing_attrs.join(", ")}" if missing_attrs.any?
+  def fail!(failure_attributes = {})
+    # Make sure we have all required attributes
+    missing_attrs = self.class.failure_attributes
+                        .reject { |failure_attr| failure_attributes.key?(failure_attr) }
+    raise "Missing failure attrs: #{missing_attrs.join(", ")}" if missing_attrs.any?
 
-  #   context.failure = true
-  #   raise Failure, context
-  # end
+    context.fail!(failure_attributes)
+  end
 
   module ClassMethods
     def required_attributes
@@ -65,9 +64,9 @@ module Interactor
       end
     end
 
-    # def failure(*attributes)
-    #   self.failure_attributes.concat attributes
-    # end
+    def failure(*attributes)
+      self.failure_attributes.concat attributes
+    end
 
     def call(context = {})
       verify_attributes(context)
