@@ -3,24 +3,24 @@ require "zeitwerk"
 loader = Zeitwerk::Loader.for_gem
 loader.setup
 
-module Interactor
-  # When the Interactor module is included in a class, add the relevant class
+module Interaktor
+  # When the Interaktor module is included in a class, add the relevant class
   # methods and hooks to that class.
   #
-  # @param base [Class] the class which is including the Interactor module
+  # @param base [Class] the class which is including the Interaktor module
   def self.included(base)
     base.class_eval do
       extend ClassMethods
       include Hooks
     end
 
-    # @return [Interactor::Context] this should not be used publicly
+    # @return [Interaktor::Context] this should not be used publicly
     attr_accessor :context
   end
 
   module ClassMethods
     # The list of attributes which are required to be passed in when calling
-    # the interactor.
+    # the interaktor.
     #
     # @return [Array<Symbol>]
     def required_attributes
@@ -28,7 +28,7 @@ module Interactor
     end
 
     # The list of attributes which are NOT required to be passed in when
-    # calling the interactor.
+    # calling the interaktor.
     #
     # @return [Array<Symbol>]
     def optional_attributes
@@ -36,14 +36,14 @@ module Interactor
     end
 
     # The list of attributes which are required to be passed in when calling
-    # `#fail!` from within the interactor.
+    # `#fail!` from within the interaktor.
     #
     # @return [Array<Symbol>]
     def failure_attributes
       @failure_attributes ||= []
     end
 
-    # A DSL method for documenting required interactor attributes.
+    # A DSL method for documenting required interaktor attributes.
     #
     # @param attributes [Symbol, Array<Symbol>] the list of attribute names
     #
@@ -59,7 +59,7 @@ module Interactor
       end
     end
 
-    # A DSL method for documenting optional interactor attributes.
+    # A DSL method for documenting optional interaktor attributes.
     #
     # @param attributes [Symbol, Array<Symbol>] the list of attribute names
     #
@@ -73,7 +73,7 @@ module Interactor
           unless context.to_h.key?(attribute)
             raise <<~ERROR
                     You can't assign a value to an optional parameter if you didn't
-                    initialize the interactor with it in the first place.
+                    initialize the interaktor with it in the first place.
                   ERROR
           end
 
@@ -82,7 +82,7 @@ module Interactor
       end
     end
 
-    # A DSL method for documenting required interactor failure attributes.
+    # A DSL method for documenting required interaktor failure attributes.
     #
     # @param attributes [Symbol, Array<Symbol>] the list of attribute names
     #
@@ -91,29 +91,29 @@ module Interactor
       failure_attributes.concat attributes
     end
 
-    # Invoke an Interactor. This is the primary public API method to an
-    # interactor.
+    # Invoke an Interaktor. This is the primary public API method to an
+    # interaktor.
     #
-    # @param context [Hash, Interactor::Context] the context object as a hash
+    # @param context [Hash, Interaktor::Context] the context object as a hash
     # with attributes or an already-built context
     #
-    # @return [Interactor::Context] the context, following interactor execution
+    # @return [Interaktor::Context] the context, following interaktor execution
     def call(context = {})
       verify_attribute_presence(context)
 
       new(context).tap(&:run).context
     end
 
-    # Invoke an Interactor. This method behaves identically to `#call`, with
+    # Invoke an Interaktor. This method behaves identically to `#call`, with
     # one notable exception - if the context is failed during the invocation of
-    # the interactor, `Interactor::Failure` is raised.
+    # the interaktor, `Interaktor::Failure` is raised.
     #
-    # @param context [Hash, Interactor::Context] the context object as a hash
+    # @param context [Hash, Interaktor::Context] the context object as a hash
     # with attributes or an already-built context
     #
-    # @raises [Interactor::Failure]
+    # @raises [Interaktor::Failure]
     #
-    # @return [Interactor::Context] the context, following interactor execution
+    # @return [Interaktor::Context] the context, following interaktor execution
     def call!(context = {})
       verify_attribute_presence(context)
 
@@ -126,7 +126,7 @@ module Interactor
     # methods, and determine if there are any attributes which are required and
     # have not been provided.
     #
-    # @param context [Interactor::Context] the context to check
+    # @param context [Interaktor::Context] the context to check
     #
     # @return [void]
     def verify_attribute_presence(context)
@@ -134,19 +134,19 @@ module Interactor
       missing_attrs = required_attributes.reject { |required_attr| context.to_h.key?(required_attr) }
 
       raise <<~ERROR if missing_attrs.any?
-        Required attribute(s) were not provided when initializing #{name} interactor:
+        Required attribute(s) were not provided when initializing #{name} interaktor:
           #{missing_attrs.join("\n  ")}
       ERROR
     end
   end
 
-  # @param context [Hash, Interactor::Context] the context object as a hash
+  # @param context [Hash, Interaktor::Context] the context object as a hash
   #   with attributes or an already-built context
   def initialize(context = {})
-    @context = Interactor::Context.build(context)
+    @context = Interaktor::Context.build(context)
   end
 
-  # Fail the current interactor.
+  # Fail the current interaktor.
   #
   # @param failure_attributes [Hash{Symbol=>Object}] the context attributes
   #
@@ -160,40 +160,40 @@ module Interactor
     context.fail!(failure_attributes)
   end
 
-  # Invoke an Interactor instance without any hooks, tracking, or rollback. It
+  # Invoke an Interaktor instance without any hooks, tracking, or rollback. It
   # is expected that the `#call` instance method is overwritten for each
-  # interactor class.
+  # interaktor class.
   #
   # @return [void]
   def call; end
 
-  # Reverse prior invocation of an Interactor instance. Any interactor class
+  # Reverse prior invocation of an Interaktor instance. Any interaktor class
   # that requires undoing upon downstream failure is expected to overwrite the
   # `#rollback` instance method.
   #
   # @return [void]
   def rollback; end
 
-  # Invoke an interactor instance along with all defined hooks. The `run`
+  # Invoke an interaktor instance along with all defined hooks. The `run`
   # method is used internally by the `call` class method. After successful
-  # invocation of the interactor, the instance is tracked within the context.
+  # invocation of the interaktor, the instance is tracked within the context.
   # If the context is failed or any error is raised, the context is rolled
   # back.
   #
   # @return [void]
   def run
     run!
-  rescue Interactor::Failure # rubocop:disable Lint/SuppressedException
+  rescue Interaktor::Failure # rubocop:disable Lint/SuppressedException
   end
 
-  # Invoke an Interactor instance along with all defined hooks, typically used
-  # internally by `.call!`. After successful invocation of the interactor, the
+  # Invoke an Interaktor instance along with all defined hooks, typically used
+  # internally by `.call!`. After successful invocation of the interaktor, the
   # instance is tracked within the context. If the context is failed or any
   # error is raised, the context is rolled back. This method behaves
   # identically to `#run` with one notable exception - if the context is failed
-  # during the invocation of the interactor, `Interactor::Failure` is raised.
+  # during the invocation of the interaktor, `Interaktor::Failure` is raised.
   #
-  # @raises [Interactor::Failure]
+  # @raises [Interaktor::Failure]
   #
   # @return [void]
   def run!

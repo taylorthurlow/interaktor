@@ -1,17 +1,17 @@
 describe "Integration" do
-  def build_interactor(&block)
-    interactor = Class.new.send(:include, Interactor)
-    interactor.class_eval(&block) if block
-    interactor.class_eval do
+  def build_interaktor(&block)
+    interaktor = Class.new.send(:include, Interaktor)
+    interaktor.class_eval(&block) if block
+    interaktor.class_eval do
       def unexpected_error!
         raise "foo"
       end
     end
-    interactor
+    interaktor
   end
 
   def build_organizer(options = {}, &block)
-    organizer = Class.new.send(:include, Interactor::Organizer)
+    organizer = Class.new.send(:include, Interaktor::Organizer)
     organizer.organize(options[:organize]) if options[:organize]
     organizer.class_eval(&block) if block
     organizer.class_eval do
@@ -26,24 +26,24 @@ describe "Integration" do
   #
   # organizer
   #  ├─ organizer2
-  #  │   ├─ interactor2a
-  #  │   ├─ interactor2b
-  #  │   └─ interactor2c
-  #  ├─ interactor3
+  #  │   ├─ interaktor2a
+  #  │   ├─ interaktor2b
+  #  │   └─ interaktor2c
+  #  ├─ interaktor3
   #  ├─ organizer4
-  #  │   ├─ interactor4a
-  #  │   ├─ interactor4b
-  #  │   └─ interactor4c
-  #  └─ interactor5
+  #  │   ├─ interaktor4a
+  #  │   ├─ interaktor4b
+  #  │   └─ interaktor4c
+  #  └─ interaktor5
   #
   # rubocop:enable Style/AsciiComments
 
   let(:organizer) {
-    interactors = [organizer2, interactor3, organizer4, interactor5]
-    build_organizer(organize: interactors) do
-      around do |interactor|
+    interaktors = [organizer2, interaktor3, organizer4, interaktor5]
+    build_organizer(organize: interaktors) do
+      around do |interaktor|
         context.steps << :around_before
-        interactor.call
+        interaktor.call
         context.steps << :around_after
       end
 
@@ -58,10 +58,10 @@ describe "Integration" do
   }
 
   let(:organizer2) {
-    build_organizer(organize: [interactor2a, interactor2b, interactor2c]) do
-      around do |interactor|
+    build_organizer(organize: [interaktor2a, interaktor2b, interaktor2c]) do
+      around do |interaktor|
         context.steps << :around_before2
-        interactor.call
+        interaktor.call
         context.steps << :around_after2
       end
 
@@ -75,11 +75,11 @@ describe "Integration" do
     end
   }
 
-  let(:interactor2a) {
-    build_interactor do
-      around do |interactor|
+  let(:interaktor2a) {
+    build_interaktor do
+      around do |interaktor|
         context.steps << :around_before2a
-        interactor.call
+        interaktor.call
         context.steps << :around_after2a
       end
 
@@ -101,11 +101,11 @@ describe "Integration" do
     end
   }
 
-  let(:interactor2b) {
-    build_interactor do
-      around do |interactor|
+  let(:interaktor2b) {
+    build_interaktor do
+      around do |interaktor|
         context.steps << :around_before2b
-        interactor.call
+        interaktor.call
         context.steps << :around_after2b
       end
 
@@ -127,11 +127,11 @@ describe "Integration" do
     end
   }
 
-  let(:interactor2c) {
-    build_interactor do
-      around do |interactor|
+  let(:interaktor2c) {
+    build_interaktor do
+      around do |interaktor|
         context.steps << :around_before2c
-        interactor.call
+        interaktor.call
         context.steps << :around_after2c
       end
 
@@ -153,11 +153,11 @@ describe "Integration" do
     end
   }
 
-  let(:interactor3) {
-    build_interactor do
-      around do |interactor|
+  let(:interaktor3) {
+    build_interaktor do
+      around do |interaktor|
         context.steps << :around_before3
-        interactor.call
+        interaktor.call
         context.steps << :around_after3
       end
 
@@ -180,10 +180,10 @@ describe "Integration" do
   }
 
   let(:organizer4) {
-    build_organizer(organize: [interactor4a, interactor4b, interactor4c]) do
-      around do |interactor|
+    build_organizer(organize: [interaktor4a, interaktor4b, interaktor4c]) do
+      around do |interaktor|
         context.steps << :around_before4
-        interactor.call
+        interaktor.call
         context.steps << :around_after4
       end
 
@@ -197,11 +197,11 @@ describe "Integration" do
     end
   }
 
-  let(:interactor4a) {
-    build_interactor do
-      around do |interactor|
+  let(:interaktor4a) {
+    build_interaktor do
+      around do |interaktor|
         context.steps << :around_before4a
-        interactor.call
+        interaktor.call
         context.steps << :around_after4a
       end
 
@@ -223,11 +223,11 @@ describe "Integration" do
     end
   }
 
-  let(:interactor4b) {
-    build_interactor do
-      around do |interactor|
+  let(:interaktor4b) {
+    build_interaktor do
+      around do |interaktor|
         context.steps << :around_before4b
-        interactor.call
+        interaktor.call
         context.steps << :around_after4b
       end
 
@@ -249,11 +249,11 @@ describe "Integration" do
     end
   }
 
-  let(:interactor4c) {
-    build_interactor do
-      around do |interactor|
+  let(:interaktor4c) {
+    build_interaktor do
+      around do |interaktor|
         context.steps << :around_before4c
-        interactor.call
+        interaktor.call
         context.steps << :around_after4c
       end
 
@@ -275,11 +275,11 @@ describe "Integration" do
     end
   }
 
-  let(:interactor5) {
-    build_interactor do
-      around do |interactor|
+  let(:interaktor5) {
+    build_interaktor do
+      around do |interaktor|
         context.steps << :around_before5
-        interactor.call
+        interaktor.call
         context.steps << :around_after5
       end
 
@@ -301,7 +301,7 @@ describe "Integration" do
     end
   }
 
-  let(:context) { Interactor::Context.new(steps: []) }
+  let(:context) { Interaktor::Context.new(steps: []) }
 
   context "when successful" do
     it "calls and runs hooks in the proper sequence" do
@@ -328,12 +328,12 @@ describe "Integration" do
 
   context "when an around hook fails early" do
     let(:organizer) {
-      interactors = [organizer2, interactor3, organizer4, interactor5]
-      build_organizer(organize: interactors) do
-        around do |interactor|
+      interaktors = [organizer2, interaktor3, organizer4, interaktor5]
+      build_organizer(organize: interaktors) do
+        around do |interaktor|
           context.fail!
           context.steps << :around_before
-          interactor.call
+          interaktor.call
           context.steps << :around_after
         end
 
@@ -357,12 +357,12 @@ describe "Integration" do
 
   context "when an around hook errors early" do
     let(:organizer) {
-      interactors = [organizer2, interactor3, organizer4, interactor5]
-      build_organizer(organize: interactors) do
-        around do |interactor|
+      interaktors = [organizer2, interaktor3, organizer4, interaktor5]
+      build_organizer(organize: interaktors) do
+        around do |interaktor|
           unexpected_error!
           context.steps << :around_before
-          interactor.call
+          interaktor.call
           context.steps << :around_after
         end
 
@@ -396,11 +396,11 @@ describe "Integration" do
 
   context "when a before hook fails" do
     let(:organizer) {
-      interactors = [organizer2, interactor3, organizer4, interactor5]
-      build_organizer(organize: interactors) do
-        around do |interactor|
+      interaktors = [organizer2, interaktor3, organizer4, interaktor5]
+      build_organizer(organize: interaktors) do
+        around do |interaktor|
           context.steps << :around_before
-          interactor.call
+          interaktor.call
           context.steps << :around_after
         end
 
@@ -426,11 +426,11 @@ describe "Integration" do
 
   context "when a before hook errors" do
     let(:organizer) {
-      interactors = [organizer2, interactor3, organizer4, interactor5]
-      build_organizer(organize: interactors) do
-        around do |interactor|
+      interaktors = [organizer2, interaktor3, organizer4, interaktor5]
+      build_organizer(organize: interaktors) do
+        around do |interaktor|
           context.steps << :around_before
-          interactor.call
+          interaktor.call
           context.steps << :around_after
         end
 
@@ -466,11 +466,11 @@ describe "Integration" do
 
   context "when an after hook fails" do
     let(:organizer) {
-      interactors = [organizer2, interactor3, organizer4, interactor5]
-      build_organizer(organize: interactors) do
-        around do |interactor|
+      interaktors = [organizer2, interaktor3, organizer4, interaktor5]
+      build_organizer(organize: interaktors) do
+        around do |interaktor|
           context.steps << :around_before
-          interactor.call
+          interaktor.call
           context.steps << :around_after
         end
 
@@ -485,7 +485,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors and the failed interactor" do
+    it "rolls back successfully called interaktors and the failed interaktor" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
@@ -516,11 +516,11 @@ describe "Integration" do
 
   context "when an after hook errors" do
     let(:organizer) {
-      interactors = [organizer2, interactor3, organizer4, interactor5]
-      build_organizer(organize: interactors) do
-        around do |interactor|
+      interaktors = [organizer2, interaktor3, organizer4, interaktor5]
+      build_organizer(organize: interaktors) do
+        around do |interaktor|
           context.steps << :around_before
-          interactor.call
+          interaktor.call
           context.steps << :around_after
         end
 
@@ -535,7 +535,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors and the failed interactor" do
+    it "rolls back successfully called interaktors and the failed interaktor" do
       expect {
         begin
           organizer.call(context)
@@ -576,11 +576,11 @@ describe "Integration" do
 
   context "when an around hook fails late" do
     let(:organizer) {
-      interactors = [organizer2, interactor3, organizer4, interactor5]
-      build_organizer(organize: interactors) do
-        around do |interactor|
+      interaktors = [organizer2, interaktor3, organizer4, interaktor5]
+      build_organizer(organize: interaktors) do
+        around do |interaktor|
           context.steps << :around_before
-          interactor.call
+          interaktor.call
           context.fail!
           context.steps << :around_after
         end
@@ -595,7 +595,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors and the failed interactor" do
+    it "rolls back successfully called interaktors and the failed interaktor" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
@@ -627,11 +627,11 @@ describe "Integration" do
 
   context "when an around hook errors late" do
     let(:organizer) {
-      interactors = [organizer2, interactor3, organizer4, interactor5]
-      build_organizer(organize: interactors) do
-        around do |interactor|
+      interaktors = [organizer2, interaktor3, organizer4, interaktor5]
+      build_organizer(organize: interaktors) do
+        around do |interaktor|
           context.steps << :around_before
-          interactor.call
+          interaktor.call
           unexpected_error!
           context.steps << :around_after
         end
@@ -646,7 +646,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors and the failed interactor" do
+    it "rolls back successfully called interaktors and the failed interaktor" do
       expect {
         begin
           organizer.call(context)
@@ -687,12 +687,12 @@ describe "Integration" do
   end
 
   context "when a nested around hook fails early" do
-    let(:interactor3) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor3) {
+      build_interaktor do
+        around do |interaktor|
           context.fail!
           context.steps << :around_before3
-          interactor.call
+          interaktor.call
           context.steps << :around_after3
         end
 
@@ -714,7 +714,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors" do
+    it "rolls back successfully called interaktors" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
@@ -732,12 +732,12 @@ describe "Integration" do
   end
 
   context "when a nested around hook errors early" do
-    let(:interactor3) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor3) {
+      build_interaktor do
+        around do |interaktor|
           unexpected_error!
           context.steps << :around_before3
-          interactor.call
+          interaktor.call
           context.steps << :around_after3
         end
 
@@ -759,7 +759,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors" do
+    it "rolls back successfully called interaktors" do
       expect {
         begin
           organizer.call(context)
@@ -787,11 +787,11 @@ describe "Integration" do
   end
 
   context "when a nested before hook fails" do
-    let(:interactor3) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor3) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before3
-          interactor.call
+          interaktor.call
           context.steps << :around_after3
         end
 
@@ -814,7 +814,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors" do
+    it "rolls back successfully called interaktors" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
@@ -833,11 +833,11 @@ describe "Integration" do
   end
 
   context "when a nested before hook errors" do
-    let(:interactor3) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor3) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before3
-          interactor.call
+          interaktor.call
           context.steps << :around_after3
         end
 
@@ -860,7 +860,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors" do
+    it "rolls back successfully called interaktors" do
       expect {
         begin
           organizer.call(context)
@@ -889,11 +889,11 @@ describe "Integration" do
   end
 
   context "when a nested call fails" do
-    let(:interactor3) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor3) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before3
-          interactor.call
+          interaktor.call
           context.steps << :around_after3
         end
 
@@ -916,7 +916,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors" do
+    it "rolls back successfully called interaktors" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
@@ -935,11 +935,11 @@ describe "Integration" do
   end
 
   context "when a nested call errors" do
-    let(:interactor3) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor3) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before3
-          interactor.call
+          interaktor.call
           context.steps << :around_after3
         end
 
@@ -962,7 +962,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors" do
+    it "rolls back successfully called interaktors" do
       expect {
         begin
           organizer.call(context)
@@ -991,11 +991,11 @@ describe "Integration" do
   end
 
   context "when a nested after hook fails" do
-    let(:interactor3) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor3) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before3
-          interactor.call
+          interaktor.call
           context.steps << :around_after3
         end
 
@@ -1018,7 +1018,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors and the failed interactor" do
+    it "rolls back successfully called interaktors and the failed interaktor" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
@@ -1038,11 +1038,11 @@ describe "Integration" do
   end
 
   context "when a nested after hook errors" do
-    let(:interactor3) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor3) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before3
-          interactor.call
+          interaktor.call
           context.steps << :around_after3
         end
 
@@ -1065,7 +1065,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors and the failed interactor" do
+    it "rolls back successfully called interaktors and the failed interaktor" do
       expect {
         begin
           organizer.call(context)
@@ -1095,11 +1095,11 @@ describe "Integration" do
   end
 
   context "when a nested around hook fails late" do
-    let(:interactor3) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor3) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before3
-          interactor.call
+          interaktor.call
           context.fail!
           context.steps << :around_after3
         end
@@ -1122,7 +1122,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors and the failed interactor" do
+    it "rolls back successfully called interaktors and the failed interaktor" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
@@ -1142,11 +1142,11 @@ describe "Integration" do
   end
 
   context "when a nested around hook errors late" do
-    let(:interactor3) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor3) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before3
-          interactor.call
+          interaktor.call
           unexpected_error!
           context.steps << :around_after3
         end
@@ -1169,7 +1169,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors and the failed interactor" do
+    it "rolls back successfully called interaktors and the failed interaktor" do
       expect {
         begin
           organizer.call(context)
@@ -1199,12 +1199,12 @@ describe "Integration" do
   end
 
   context "when a deeply nested around hook fails early" do
-    let(:interactor4b) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor4b) {
+      build_interaktor do
+        around do |interaktor|
           context.fail!
           context.steps << :around_before4b
-          interactor.call
+          interaktor.call
           context.steps << :around_after4b
         end
 
@@ -1226,7 +1226,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors" do
+    it "rolls back successfully called interaktors" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
@@ -1249,12 +1249,12 @@ describe "Integration" do
   end
 
   context "when a deeply nested around hook errors early" do
-    let(:interactor4b) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor4b) {
+      build_interaktor do
+        around do |interaktor|
           unexpected_error!
           context.steps << :around_before4b
-          interactor.call
+          interaktor.call
           context.steps << :around_after4b
         end
 
@@ -1276,7 +1276,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors" do
+    it "rolls back successfully called interaktors" do
       expect {
         begin
           organizer.call(context)
@@ -1309,11 +1309,11 @@ describe "Integration" do
   end
 
   context "when a deeply nested before hook fails" do
-    let(:interactor4b) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor4b) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before4b
-          interactor.call
+          interaktor.call
           context.steps << :around_after4b
         end
 
@@ -1336,7 +1336,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors" do
+    it "rolls back successfully called interaktors" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
@@ -1360,11 +1360,11 @@ describe "Integration" do
   end
 
   context "when a deeply nested before hook errors" do
-    let(:interactor4b) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor4b) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before4b
-          interactor.call
+          interaktor.call
           context.steps << :around_after4b
         end
 
@@ -1387,7 +1387,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors" do
+    it "rolls back successfully called interaktors" do
       expect {
         begin
           organizer.call(context)
@@ -1421,11 +1421,11 @@ describe "Integration" do
   end
 
   context "when a deeply nested call fails" do
-    let(:interactor4b) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor4b) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before4b
-          interactor.call
+          interaktor.call
           context.steps << :around_after4b
         end
 
@@ -1448,7 +1448,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors" do
+    it "rolls back successfully called interaktors" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
@@ -1472,11 +1472,11 @@ describe "Integration" do
   end
 
   context "when a deeply nested call errors" do
-    let(:interactor4b) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor4b) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before4b
-          interactor.call
+          interaktor.call
           context.steps << :around_after4b
         end
 
@@ -1499,7 +1499,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors" do
+    it "rolls back successfully called interaktors" do
       expect {
         begin
           organizer.call(context)
@@ -1533,11 +1533,11 @@ describe "Integration" do
   end
 
   context "when a deeply nested after hook fails" do
-    let(:interactor4b) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor4b) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before4b
-          interactor.call
+          interaktor.call
           context.steps << :around_after4b
         end
 
@@ -1560,7 +1560,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors and the failed interactor" do
+    it "rolls back successfully called interaktors and the failed interaktor" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
@@ -1585,11 +1585,11 @@ describe "Integration" do
   end
 
   context "when a deeply nested after hook errors" do
-    let(:interactor4b) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor4b) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before4b
-          interactor.call
+          interaktor.call
           context.steps << :around_after4b
         end
 
@@ -1612,7 +1612,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors and the failed interactor" do
+    it "rolls back successfully called interaktors and the failed interaktor" do
       expect {
         begin
           organizer.call(context)
@@ -1647,11 +1647,11 @@ describe "Integration" do
   end
 
   context "when a deeply nested around hook fails late" do
-    let(:interactor4b) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor4b) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before4b
-          interactor.call
+          interaktor.call
           context.fail!
           context.steps << :around_after4b
         end
@@ -1674,7 +1674,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors and the failed interactor" do
+    it "rolls back successfully called interaktors and the failed interaktor" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
@@ -1699,11 +1699,11 @@ describe "Integration" do
   end
 
   context "when a deeply nested around hook errors late" do
-    let(:interactor4b) {
-      build_interactor do
-        around do |interactor|
+    let(:interaktor4b) {
+      build_interaktor do
+        around do |interaktor|
           context.steps << :around_before4b
-          interactor.call
+          interaktor.call
           unexpected_error!
           context.steps << :around_after4b
         end
@@ -1726,7 +1726,7 @@ describe "Integration" do
       end
     }
 
-    it "rolls back successfully called interactors and the failed interactor" do
+    it "rolls back successfully called interaktors and the failed interaktor" do
       expect {
         begin
           organizer.call(context)
@@ -1761,9 +1761,9 @@ describe "Integration" do
   end
 
   context "when there are multiple organize calls" do
-    it "runs all passed interactors in correct order" do
-      organizer = build_organizer(organize: [organizer2, interactor3])
-      organizer.organize(organizer4, interactor5)
+    it "runs all passed interaktors in correct order" do
+      organizer = build_organizer(organize: [organizer2, interaktor3])
+      organizer.organize(organizer4, interaktor5)
 
       expect {
         organizer.call(context)

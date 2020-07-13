@@ -1,20 +1,20 @@
-# Internal: Methods relating to supporting hooks around Interactor invocation.
-module Interactor::Hooks
-  # Internal: Install Interactor's behavior in the given class.
+# Internal: Methods relating to supporting hooks around Interaktor invocation.
+module Interaktor::Hooks
+  # Internal: Install Interaktor's behavior in the given class.
   def self.included(base)
     base.class_eval do
       extend ClassMethods
     end
   end
 
-  # Internal: Interactor::Hooks class methods.
+  # Internal: Interaktor::Hooks class methods.
   module ClassMethods
-    # Public: Declare hooks to run around Interactor invocation. The around
+    # Public: Declare hooks to run around Interaktor invocation. The around
     # method may be called multiple times; subsequent calls append declared
     # hooks to existing around hooks.
     #
     # hooks - Zero or more Symbol method names representing instance methods
-    #         to be called around interactor invocation. Each instance method
+    #         to be called around interaktor invocation. Each instance method
     #         invocation receives an argument representing the next link in
     #         the around hook chain.
     # block - An optional block to be executed as a hook. If given, the block
@@ -22,14 +22,14 @@ module Interactor::Hooks
     #
     # Examples
     #
-    #   class MyInteractor
-    #     include Interactor
+    #   class MyInteraktor
+    #     include Interaktor
     #
     #     around :time_execution
     #
-    #     around do |interactor|
+    #     around do |interaktor|
     #       puts "started"
-    #       interactor.call
+    #       interaktor.call
     #       puts "finished"
     #     end
     #
@@ -39,9 +39,9 @@ module Interactor::Hooks
     #
     #     private
     #
-    #     def time_execution(interactor)
+    #     def time_execution(interaktor)
     #       context.start_time = Time.now
-    #       interactor.call
+    #       interaktor.call
     #       context.finish_time = Time.now
     #     end
     #   end
@@ -52,19 +52,19 @@ module Interactor::Hooks
       hooks.each { |hook| around_hooks.push(hook) }
     end
 
-    # Public: Declare hooks to run before Interactor invocation. The before
+    # Public: Declare hooks to run before Interaktor invocation. The before
     # method may be called multiple times; subsequent calls append declared
     # hooks to existing before hooks.
     #
     # hooks - Zero or more Symbol method names representing instance methods
-    #         to be called before interactor invocation.
+    #         to be called before interaktor invocation.
     # block - An optional block to be executed as a hook. If given, the block
     #         is executed after methods corresponding to any given Symbols.
     #
     # Examples
     #
-    #   class MyInteractor
-    #     include Interactor
+    #   class MyInteraktor
+    #     include Interaktor
     #
     #     before :set_start_time
     #
@@ -89,19 +89,19 @@ module Interactor::Hooks
       hooks.each { |hook| before_hooks.push(hook) }
     end
 
-    # Public: Declare hooks to run after Interactor invocation. The after
+    # Public: Declare hooks to run after Interaktor invocation. The after
     # method may be called multiple times; subsequent calls prepend declared
     # hooks to existing after hooks.
     #
     # hooks - Zero or more Symbol method names representing instance methods
-    #         to be called after interactor invocation.
+    #         to be called after interaktor invocation.
     # block - An optional block to be executed as a hook. If given, the block
     #         is executed before methods corresponding to any given Symbols.
     #
     # Examples
     #
-    #   class MyInteractor
-    #     include Interactor
+    #   class MyInteraktor
+    #     include Interaktor
     #
     #     after :set_finish_time
     #
@@ -126,18 +126,18 @@ module Interactor::Hooks
       hooks.each { |hook| after_hooks.unshift(hook) }
     end
 
-    # Internal: An Array of declared hooks to run around Interactor
+    # Internal: An Array of declared hooks to run around Interaktor
     # invocation. The hooks appear in the order in which they will be run.
     #
     # Examples
     #
-    #   class MyInteractor
-    #     include Interactor
+    #   class MyInteraktor
+    #     include Interaktor
     #
     #     around :time_execution, :use_transaction
     #   end
     #
-    #   MyInteractor.around_hooks
+    #   MyInteraktor.around_hooks
     #   # => [:time_execution, :use_transaction]
     #
     # Returns an Array of Symbols and Procs.
@@ -145,18 +145,18 @@ module Interactor::Hooks
       @around_hooks ||= []
     end
 
-    # Internal: An Array of declared hooks to run before Interactor
+    # Internal: An Array of declared hooks to run before Interaktor
     # invocation. The hooks appear in the order in which they will be run.
     #
     # Examples
     #
-    #   class MyInteractor
-    #     include Interactor
+    #   class MyInteraktor
+    #     include Interaktor
     #
     #     before :set_start_time, :say_hello
     #   end
     #
-    #   MyInteractor.before_hooks
+    #   MyInteraktor.before_hooks
     #   # => [:set_start_time, :say_hello]
     #
     # Returns an Array of Symbols and Procs.
@@ -164,18 +164,18 @@ module Interactor::Hooks
       @before_hooks ||= []
     end
 
-    # Internal: An Array of declared hooks to run before Interactor
+    # Internal: An Array of declared hooks to run before Interaktor
     # invocation. The hooks appear in the order in which they will be run.
     #
     # Examples
     #
-    #   class MyInteractor
-    #     include Interactor
+    #   class MyInteraktor
+    #     include Interaktor
     #
     #     after :set_finish_time, :say_goodbye
     #   end
     #
-    #   MyInteractor.after_hooks
+    #   MyInteraktor.after_hooks
     #   # => [:say_goodbye, :set_finish_time]
     #
     # Returns an Array of Symbols and Procs.
@@ -192,7 +192,7 @@ module Interactor::Hooks
   # Examples
   #
   #   class MyProcessor
-  #     include Interactor::Hooks
+  #     include Interaktor::Hooks
   #
   #     def process_with_hooks
   #       with_hooks do

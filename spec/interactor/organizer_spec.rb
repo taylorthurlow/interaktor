@@ -1,31 +1,31 @@
-module Interactor
+module Interaktor
   describe Organizer do
     let(:organizer) { Class.new.send(:include, Organizer) }
 
     include_examples "lint"
 
     describe ".organize" do
-      let(:interactor2) { double(:interactor2) }
-      let(:interactor3) { double(:interactor3) }
+      let(:interaktor2) { double(:interaktor2) }
+      let(:interaktor3) { double(:interaktor3) }
 
-      it "sets interactors given class arguments" do
+      it "sets interaktors given class arguments" do
         expect {
-          organizer.organize(interactor2, interactor3)
-        }.to change(organizer, :organized).from([]).to([interactor2, interactor3])
+          organizer.organize(interaktor2, interaktor3)
+        }.to change(organizer, :organized).from([]).to([interaktor2, interaktor3])
       end
 
-      it "sets interactors given an array of classes" do
+      it "sets interaktors given an array of classes" do
         expect {
-          organizer.organize([interactor2, interactor3])
-        }.to change(organizer, :organized).from([]).to([interactor2, interactor3])
+          organizer.organize([interaktor2, interaktor3])
+        }.to change(organizer, :organized).from([]).to([interaktor2, interaktor3])
       end
 
       it "allows multiple organize calls" do
-        interactor4 = double(:interactor4)
+        interaktor4 = double(:interaktor4)
         expect {
-          organizer.organize(interactor2, interactor3)
-          organizer.organize(interactor4)
-        }.to change(organizer, :organized).from([]).to([interactor2, interactor3, interactor4])
+          organizer.organize(interaktor2, interaktor3)
+          organizer.organize(interaktor4)
+        }.to change(organizer, :organized).from([]).to([interaktor2, interaktor3, interaktor4])
       end
     end
 
@@ -38,21 +38,21 @@ module Interactor
     describe "#call" do
       let(:instance) { organizer.new }
       let(:context) { double(:context) }
-      let(:interactor2) { double(:interactor2) }
-      let(:interactor3) { double(:interactor3) }
-      let(:interactor4) { double(:interactor4) }
+      let(:interaktor2) { double(:interaktor2) }
+      let(:interaktor3) { double(:interaktor3) }
+      let(:interaktor4) { double(:interaktor4) }
 
       before do
         allow(instance).to receive(:context) { context }
         allow(organizer).to receive(:organized) {
-          [interactor2, interactor3, interactor4]
+          [interaktor2, interaktor3, interaktor4]
         }
       end
 
-      it "calls each interactor in order with the context" do
-        expect(interactor2).to receive(:call!).once.with(context).ordered
-        expect(interactor3).to receive(:call!).once.with(context).ordered
-        expect(interactor4).to receive(:call!).once.with(context).ordered
+      it "calls each interaktor in order with the context" do
+        expect(interaktor2).to receive(:call!).once.with(context).ordered
+        expect(interaktor3).to receive(:call!).once.with(context).ordered
+        expect(interaktor4).to receive(:call!).once.with(context).ordered
 
         instance.call
       end

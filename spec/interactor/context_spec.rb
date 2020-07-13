@@ -1,4 +1,4 @@
-module Interactor
+module Interaktor
   describe Context do
     describe ".build" do
       it "converts the given hash to a context" do
