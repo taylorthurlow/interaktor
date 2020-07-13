@@ -1,7 +1,7 @@
-require "interactor/context"
-require "interactor/error"
-require "interactor/hooks"
-require "interactor/organizer"
+require "zeitwerk"
+
+loader = Zeitwerk::Loader.for_gem
+loader.setup
 
 module Interactor
   # When the Interactor module is included in a class, add the relevant class
@@ -140,7 +140,7 @@ module Interactor
   # @param context [Hash, Interactor::Context] the context object as a hash
   #   with attributes or an already-built context
   def initialize(context = {})
-    @context = Context.build(context)
+    @context = Interactor::Context.build(context)
   end
 
   # Fail the current interactor.
@@ -171,8 +171,6 @@ module Interactor
   # @return [void]
   def rollback; end
 
-  private
-
   # Invoke an interactor instance along with all defined hooks. The `run`
   # method is used internally by the `call` class method. After successful
   # invocation of the interactor, the instance is tracked within the context.
@@ -182,7 +180,7 @@ module Interactor
   # @return [void]
   def run
     run!
-  rescue Failure # rubocop:disable Lint/SuppressedException
+  rescue Interactor::Failure # rubocop:disable Lint/SuppressedException
   end
 
   # Invoke an Interactor instance along with all defined hooks, typically used

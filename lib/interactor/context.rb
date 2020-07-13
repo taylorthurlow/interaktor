@@ -18,7 +18,7 @@ class Interactor::Context < OpenStruct
   #
   # @return [Interactor::Context]
   def self.build(context = {})
-    context.is_a?(Context) ? context : new(context)
+    context.is_a?(Interactor::Context) ? context : new(context)
   end
 
   # Whether the Interactor::Context is successful. By default, a new context is
@@ -52,7 +52,7 @@ class Interactor::Context < OpenStruct
   def fail!(context = {})
     context.each { |key, value| self[key.to_sym] = value }
     @failure = true
-    raise Failure, self
+    raise Interactor::Failure, self
   end
 
   # Roll back the Interactor::Context. Any interactors to which this context
@@ -67,8 +67,6 @@ class Interactor::Context < OpenStruct
     _called.reverse_each(&:rollback)
     @rolled_back = true
   end
-
-  private
 
   # Track that an Interactor has been called. The `#called!` method is used by
   # the interactor being invoked with this context. After an interactor is
