@@ -16,7 +16,7 @@ module Interactor
       end
 
       it "doesn't affect the original hash" do
-        hash = {foo: "bar"}
+        hash = { foo: "bar" }
         context = Context.build(hash)
 
         expect(context).to be_a(Context)

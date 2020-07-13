@@ -44,7 +44,7 @@ shared_examples :lint do
 
     it "initializes a context" do
       expect(Interactor::Context).to receive(:build)
-        .once.with(foo: "bar") { context }
+          .once.with(foo: "bar") { context }
 
       instance = interactor.new(foo: "bar")
 
