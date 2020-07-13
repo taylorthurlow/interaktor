@@ -77,7 +77,7 @@ module Interactor
       # Returns nothing.
       def call
         self.class.organized.each do |interactor|
-          interactor.call!(context)
+          interactor.call!(@context)
         end
       end
 

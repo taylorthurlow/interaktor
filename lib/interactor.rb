@@ -8,8 +8,6 @@ module Interactor
     base.class_eval do
       extend ClassMethods
       include Hooks
-
-      attr_reader :context
     end
   end
 
@@ -19,7 +17,7 @@ module Interactor
                         .reject { |failure_attr| failure_attributes.key?(failure_attr) }
     raise "Missing failure attrs: #{missing_attrs.join(", ")}" if missing_attrs.any?
 
-    context.fail!(failure_attributes)
+    @context.fail!(failure_attributes)
   end
 
   module ClassMethods
@@ -39,9 +37,9 @@ module Interactor
       self.required_attributes.concat attributes
 
       attributes.each do |attribute|
-        define_method(attribute) { context.send(attribute) }
+        define_method(attribute) { @context.send(attribute) }
         define_method("#{attribute}=".to_sym) do |value|
-          context.send("#{attribute}=".to_sym, value)
+          @context.send("#{attribute}=".to_sym, value)
         end
       end
     end
@@ -50,16 +48,16 @@ module Interactor
       self.optional_attributes.concat attributes
 
       attributes.each do |attribute|
-        define_method(attribute) { context.send(attribute) }
+        define_method(attribute) { @context.send(attribute) }
         define_method("#{attribute}=".to_sym) do |value|
-          unless context.to_h.keys.include?(attribute)
+          unless @context.to_h.keys.include?(attribute)
             raise <<~ERROR
               You can't assign a value to an optional parameter if you didn't
               initialize the interactor with it in the first place.
             ERROR
           end
 
-          context.send("#{attribute}=".to_sym, value)
+          @context.send("#{attribute}=".to_sym, value)
         end
       end
     end
@@ -71,13 +69,13 @@ module Interactor
     def call(context = {})
       verify_attributes(context)
 
-      new(context).tap(&:run).context
+      new(context).tap(&:run).instance_variable_get(:@context)
     end
 
     def call!(context = {})
       verify_attributes(context)
 
-      new(context).tap(&:run!).context
+      new(context).tap(&:run!).instance_variable_get(:@context)
     end
 
     private
@@ -137,10 +135,10 @@ module Interactor
   def run!
     with_hooks do
       call
-      context.called!(self)
+      @context.called!(self)
     end
   rescue
-    context.rollback!
+    @context.rollback!
     raise
   end
 
