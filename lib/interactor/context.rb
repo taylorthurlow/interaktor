@@ -11,23 +11,6 @@ module Interactor
   # for the purpose of rollback.
   #
   # The context may be manipulated using arbitrary getter and setter methods.
-  #
-  # Examples
-  #
-  #   context = Interactor::Context.new
-  #   # => #<Interactor::Context>
-  #   context.foo = "bar"
-  #   # => "bar"
-  #   context
-  #   # => #<Interactor::Context foo="bar">
-  #   context.hello = "world"
-  #   # => "world"
-  #   context
-  #   # => #<Interactor::Context foo="bar" hello="world">
-  #   context.foo = "baz"
-  #   # => "baz"
-  #   context
-  #   # => #<Interactor::Context foo="baz" hello="world">
   class Context < OpenStruct
     # Internal: Initialize an Interactor::Context or preserve an existing one.
     # If the argument given is an Interactor::Context, the argument is returned.
@@ -40,17 +23,6 @@ module Interactor
     #           Interactor::Context object. If an existing Interactor::Context
     #           is given, it is simply returned. (default: {})
     #
-    # Examples
-    #
-    #   context = Interactor::Context.build(foo: "bar")
-    #   # => #<Interactor::Context foo="bar">
-    #   context.object_id
-    #   # => 2170969340
-    #   context = Interactor::Context.build(context)
-    #   # => #<Interactor::Context foo="bar">
-    #   context.object_id
-    #   # => 2170969340
-    #
     # Returns the Interactor::Context.
     def self.build(context = {})
       context.is_a?(Context) ? context : new(context)
@@ -61,17 +33,6 @@ module Interactor
     #
     # The "success?" method is the inverse of the "failure?" method.
     #
-    # Examples
-    #
-    #   context = Interactor::Context.new
-    #   # => #<Interactor::Context>
-    #   context.success?
-    #   # => true
-    #   context.fail!
-    #   # => Interactor::Failure: #<Interactor::Context>
-    #   context.success?
-    #   # => false
-    #
     # Returns true by default or false if failed.
     def success?
       !failure?
@@ -81,17 +42,6 @@ module Interactor
     # context is successful and only changes when explicitly failed.
     #
     # The "failure?" method is the inverse of the "success?" method.
-    #
-    # Examples
-    #
-    #   context = Interactor::Context.new
-    #   # => #<Interactor::Context>
-    #   context.failure?
-    #   # => false
-    #   context.fail!
-    #   # => Interactor::Failure: #<Interactor::Context>
-    #   context.failure?
-    #   # => true
     #
     # Returns false by default or true if failed.
     def failure?
@@ -107,17 +57,6 @@ module Interactor
     #
     # context - A Hash whose key/value pairs are merged into the existing
     #           Interactor::Context instance. (default: {})
-    #
-    # Examples
-    #
-    #   context = Interactor::Context.new
-    #   # => #<Interactor::Context>
-    #   context.fail!
-    #   # => Interactor::Failure: #<Interactor::Context>
-    #   context.fail! rescue false
-    #   # => false
-    #   context.fail!(foo: "baz")
-    #   # => Interactor::Failure: #<Interactor::Context foo="baz">
     #
     # Raises Interactor::Failure initialized with the Interactor::Context.
     def fail!(context = {})
@@ -142,15 +81,6 @@ module Interactor
     # context has been passed and which have been successfully called are asked
     # to roll themselves back by invoking their "rollback" instance methods.
     #
-    # Examples
-    #
-    #   context = MyInteractor.call(foo: "bar")
-    #   # => #<Interactor::Context foo="baz">
-    #   context.rollback!
-    #   # => true
-    #   context
-    #   # => #<Interactor::Context foo="bar">
-    #
     # Returns true if rolled back successfully or false if already rolled back.
     def rollback!
       return false if @rolled_back
@@ -160,18 +90,6 @@ module Interactor
 
     # Internal: An Array of successfully called Interactor instances invoked
     # against this Interactor::Context instance.
-    #
-    # Examples
-    #
-    #   context = Interactor::Context.new
-    #   # => #<Interactor::Context>
-    #   context._called
-    #   # => []
-    #
-    #   context = MyInteractor.call(foo: "bar")
-    #   # => #<Interactor::Context foo="baz">
-    #   context._called
-    #   # => [#<MyInteractor @context=#<Interactor::Context foo="baz">>]
     #
     # Returns an Array of Interactor instances or an empty Array.
     def _called

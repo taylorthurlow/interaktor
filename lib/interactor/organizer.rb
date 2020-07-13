@@ -80,6 +80,16 @@ module Interactor
           interactor.call!(context)
         end
       end
+
+      private
+
+      def required_attributes
+        self.class.organized.map { |o| o.required_attributes }.flatten.uniq
+      end
+
+      def optional_attributes
+        self.class.organized.map { |o| o.optional_attributes }.flatten.uniq
+      end
     end
   end
 end

@@ -3,114 +3,111 @@ require "interactor/error"
 require "interactor/hooks"
 require "interactor/organizer"
 
-# Public: Interactor methods. Because Interactor is a module, custom Interactor
-# classes should include Interactor rather than inherit from it.
-#
-# Examples
-#
-#   class MyInteractor
-#     include Interactor
-#
-#     def call
-#       puts context.foo
-#     end
-#   end
 module Interactor
-  # Internal: Install Interactor's behavior in the given class.
   def self.included(base)
     base.class_eval do
       extend ClassMethods
       include Hooks
 
-      # Public: Gets the Interactor::Context of the Interactor instance.
       attr_reader :context
     end
   end
 
-  # Internal: Interactor class methods.
+  # def fail!(failure_attributes = {})
+  #   # Make sure we have all required attributes
+  #   missing_attrs = self.class.failure_attributes
+  #                     .reject { |failure_attr| failure_attributes.key?(failure_attr) }
+  #   raise "Missing failure attrs: #{missing_attrs.join(", ")}" if missing_attrs.any?
+
+  #   context.failure = true
+  #   raise Failure, context
+  # end
+
   module ClassMethods
-    # Public: Invoke an Interactor. This is the primary public API method to an
-    # interactor.
-    #
-    # context - A Hash whose key/value pairs are used in initializing a new
-    #           Interactor::Context object. An existing Interactor::Context may
-    #           also be given. (default: {})
-    #
-    # Examples
-    #
-    #   MyInteractor.call(foo: "bar")
-    #   # => #<Interactor::Context foo="bar">
-    #
-    #   MyInteractor.call
-    #   # => #<Interactor::Context>
-    #
-    # Returns the resulting Interactor::Context after manipulation by the
-    #   interactor.
+    def required_attributes
+      @required_attributes ||= []
+    end
+
+    def optional_attributes
+      @optional_attributes ||= []
+    end
+
+    def failure_attributes
+      @failure_attributes ||= []
+    end
+
+    def required(*attributes)
+      self.required_attributes.concat attributes
+
+      attributes.each do |attribute|
+        define_method(attribute) { context.send(attribute) }
+        define_method("#{attribute}=".to_sym) do |value|
+          context.send("#{attribute}=".to_sym, value)
+        end
+      end
+    end
+
+    def optional(*attributes)
+      self.optional_attributes.concat attributes
+
+      attributes.each do |attribute|
+        define_method(attribute) { context.send(attribute) }
+        define_method("#{attribute}=".to_sym) do |value|
+          unless context.to_h.keys.include?(attribute)
+            raise <<~ERROR
+              You can't assign a value to an optional parameter if you didn't
+              initialize the interactor with it in the first place.
+            ERROR
+          end
+
+          context.send("#{attribute}=".to_sym, value)
+        end
+      end
+    end
+
+    # def failure(*attributes)
+    #   self.failure_attributes.concat attributes
+    # end
+
     def call(context = {})
+      verify_attributes(context)
+
       new(context).tap(&:run).context
     end
 
-    # Public: Invoke an Interactor. The "call!" method behaves identically to
-    # the "call" method with one notable exception. If the context is failed
-    # during invocation of the interactor, the Interactor::Failure is raised.
-    #
-    # context - A Hash whose key/value pairs are used in initializing a new
-    #           Interactor::Context object. An existing Interactor::Context may
-    #           also be given. (default: {})
-    #
-    # Examples
-    #
-    #   MyInteractor.call!(foo: "bar")
-    #   # => #<Interactor::Context foo="bar">
-    #
-    #   MyInteractor.call!
-    #   # => #<Interactor::Context>
-    #
-    #   MyInteractor.call!(foo: "baz")
-    #   # => Interactor::Failure: #<Interactor::Context foo="baz">
-    #
-    # Returns the resulting Interactor::Context after manipulation by the
-    #   interactor.
-    # Raises Interactor::Failure if the context is failed.
     def call!(context = {})
+      verify_attributes(context)
+
       new(context).tap(&:run!).context
+    end
+
+    private
+
+    def verify_attributes(context)
+      # TODO: Add "allow_nil?" option to required attributes
+
+      # Make sure we have all required attributes
+      missing_attrs = self.required_attributes
+                          .reject { |required_attr| context.to_h.key?(required_attr) }
+      raise <<~ERROR if missing_attrs.any?
+        Required attribute(s) were not provided when initializing #{self.name} interactor:
+          #{missing_attrs.join("\n  ")}
+      ERROR
+      
+      # # Make sure we don't have any attributes passed in that we don't know
+      # allowed_attrs = self.required_attributes + self.optional_attributes
+      # unknown_attrs = context.to_h.keys.reject { |context_attr| allowed_attrs.include?(context_attr) }
+      # raise <<~ERROR if unknown_attrs.any?
+      #   Encountered unknown attribute(s) when initializing #{self.name} interactor:
+      #     #{unknown_attrs.join("\n  ")}
+      # ERROR
     end
   end
 
-  # Internal: Initialize an Interactor.
-  #
-  # context - A Hash whose key/value pairs are used in initializing the
-  #           interactor's context. An existing Interactor::Context may also be
-  #           given. (default: {})
-  #
-  # Examples
-  #
-  #   MyInteractor.new(foo: "bar")
-  #   # => #<MyInteractor @context=#<Interactor::Context foo="bar">>
-  #
-  #   MyInteractor.new
-  #   # => #<MyInteractor @context=#<Interactor::Context>>
   def initialize(context = {})
     @context = Context.build(context)
   end
 
-  # Internal: Invoke an interactor instance along with all defined hooks. The
-  # "run" method is used internally by the "call" class method. The following
-  # are equivalent:
-  #
-  #   MyInteractor.call(foo: "bar")
-  #   # => #<Interactor::Context foo="bar">
-  #
-  #   interactor = MyInteractor.new(foo: "bar")
-  #   interactor.run
-  #   interactor.context
-  #   # => #<Interactor::Context foo="bar">
-  #
-  # After successful invocation of the interactor, the instance is tracked
-  # within the context. If the context is failed or any error is raised, the
-  # context is rolled back.
-  #
-  # Returns nothing.
   def run
     run!
   rescue Failure
