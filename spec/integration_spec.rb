@@ -321,7 +321,7 @@ describe "Integration" do
              :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
              :after4, :around_after4,
              :around_before5, :before5, :call5, :after5, :around_after5,
-             :after, :around_after
+             :after, :around_after,
            ])
     end
   end
@@ -509,7 +509,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
   end
@@ -563,7 +563,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
 
@@ -620,7 +620,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
   end
@@ -675,7 +675,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
 
@@ -726,7 +726,7 @@ describe "Integration" do
              :after2, :around_after2,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
   end
@@ -775,7 +775,7 @@ describe "Integration" do
              :after2, :around_after2,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
 
@@ -827,7 +827,7 @@ describe "Integration" do
              :around_before3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
   end
@@ -877,7 +877,7 @@ describe "Integration" do
              :around_before3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
 
@@ -929,7 +929,7 @@ describe "Integration" do
              :around_before3, :before3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
   end
@@ -979,7 +979,7 @@ describe "Integration" do
              :around_before3, :before3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
 
@@ -1032,7 +1032,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
   end
@@ -1083,7 +1083,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
 
@@ -1136,7 +1136,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
   end
@@ -1187,7 +1187,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
 
@@ -1243,7 +1243,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
   end
@@ -1297,7 +1297,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
 
@@ -1354,7 +1354,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
   end
@@ -1409,7 +1409,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
 
@@ -1466,7 +1466,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
   end
@@ -1521,7 +1521,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
 
@@ -1579,7 +1579,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
   end
@@ -1635,7 +1635,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
 
@@ -1693,7 +1693,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
   end
@@ -1749,7 +1749,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a
+             :rollback2a,
            ])
     end
 
@@ -1779,7 +1779,7 @@ describe "Integration" do
              :around_before4b, :before4b, :call4b, :after4b, :around_after4b,
              :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
              :after4, :around_after4,
-             :around_before5, :before5, :call5, :after5, :around_after5
+             :around_before5, :before5, :call5, :after5, :around_after5,
            ])
     end
   end

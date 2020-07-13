@@ -52,9 +52,9 @@ module Interactor
         define_method("#{attribute}=".to_sym) do |value|
           unless @context.to_h.keys.include?(attribute)
             raise <<~ERROR
-              You can't assign a value to an optional parameter if you didn't
-              initialize the interactor with it in the first place.
-            ERROR
+                    You can't assign a value to an optional parameter if you didn't
+                    initialize the interactor with it in the first place.
+                  ERROR
           end
 
           @context.send("#{attribute}=".to_sym, value)
@@ -85,7 +85,7 @@ module Interactor
 
       # Make sure we have all required attributes
       missing_attrs = required_attributes
-                          .reject { |required_attr| context.to_h.key?(required_attr) }
+        .reject { |required_attr| context.to_h.key?(required_attr) }
       raise <<~ERROR if missing_attrs.any?
         Required attribute(s) were not provided when initializing #{name} interactor:
           #{missing_attrs.join("\n  ")}
