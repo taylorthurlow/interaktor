@@ -13,6 +13,9 @@ module Interactor
       extend ClassMethods
       include Hooks
     end
+
+    # @return [Interactor::Context] this should not be used publicly
+    attr_accessor :context
   end
 
   module ClassMethods
@@ -49,9 +52,9 @@ module Interactor
       required_attributes.concat attributes
 
       attributes.each do |attribute|
-        define_method(attribute) { @context.send(attribute) }
+        define_method(attribute) { context.send(attribute) }
         define_method("#{attribute}=".to_sym) do |value|
-          @context.send("#{attribute}=".to_sym, value)
+          context.send("#{attribute}=".to_sym, value)
         end
       end
     end
@@ -65,16 +68,16 @@ module Interactor
       optional_attributes.concat attributes
 
       attributes.each do |attribute|
-        define_method(attribute) { @context.send(attribute) }
+        define_method(attribute) { context.send(attribute) }
         define_method("#{attribute}=".to_sym) do |value|
-          unless @context.to_h.key?(attribute)
+          unless context.to_h.key?(attribute)
             raise <<~ERROR
                     You can't assign a value to an optional parameter if you didn't
                     initialize the interactor with it in the first place.
                   ERROR
           end
 
-          @context.send("#{attribute}=".to_sym, value)
+          context.send("#{attribute}=".to_sym, value)
         end
       end
     end
@@ -98,7 +101,7 @@ module Interactor
     def call(context = {})
       verify_attribute_presence(context)
 
-      new(context).tap(&:run).instance_variable_get(:@context)
+      new(context).tap(&:run).context
     end
 
     # Invoke an Interactor. This method behaves identically to `#call`, with
@@ -114,7 +117,7 @@ module Interactor
     def call!(context = {})
       verify_attribute_presence(context)
 
-      new(context).tap(&:run!).instance_variable_get(:@context)
+      new(context).tap(&:run!).context
     end
 
     private
@@ -154,7 +157,7 @@ module Interactor
                         .reject { |failure_attr| failure_attributes.key?(failure_attr) }
     raise "Missing failure attrs: #{missing_attrs.join(", ")}" if missing_attrs.any?
 
-    @context.fail!(failure_attributes)
+    context.fail!(failure_attributes)
   end
 
   # Invoke an Interactor instance without any hooks, tracking, or rollback. It
@@ -196,10 +199,10 @@ module Interactor
   def run!
     with_hooks do
       call
-      @context.called!(self)
+      context.called!(self)
     end
   rescue StandardError
-    @context.rollback!
+    context.rollback!
     raise
   end
 end

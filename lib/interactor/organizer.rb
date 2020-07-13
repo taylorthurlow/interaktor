@@ -40,7 +40,7 @@ module Interactor::Organizer
     # @return [void]
     def call
       self.class.organized.each do |interactor|
-        interactor.call!(@context)
+        interactor.call!(context)
       end
     end
 
