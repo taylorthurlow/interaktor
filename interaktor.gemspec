@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name = "interaktor"
-  spec.version = "0.1.2"
+  spec.version = "0.1.3"
 
   spec.author = "Taylor Thurlow"
   spec.email = "taylorthurlow@me.com"
@@ -8,6 +8,7 @@ Gem::Specification.new do |spec|
   spec.summary = "Simple service object implementation"
   spec.homepage = "https://github.com/taylorthurlow/interaktor"
   spec.license = "MIT"
+  spec.files = `git ls-files`.split
   spec.test_files = spec.files.grep(/^spec/)
   spec.required_ruby_version = ">= 2.5"
   spec.require_path = "lib"
