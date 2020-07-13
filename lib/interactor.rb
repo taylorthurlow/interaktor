@@ -90,14 +90,6 @@ module Interactor
         Required attribute(s) were not provided when initializing #{self.name} interactor:
           #{missing_attrs.join("\n  ")}
       ERROR
-      
-      # # Make sure we don't have any attributes passed in that we don't know
-      # allowed_attrs = self.required_attributes + self.optional_attributes
-      # unknown_attrs = context.to_h.keys.reject { |context_attr| allowed_attrs.include?(context_attr) }
-      # raise <<~ERROR if unknown_attrs.any?
-      #   Encountered unknown attribute(s) when initializing #{self.name} interactor:
-      #     #{unknown_attrs.join("\n  ")}
-      # ERROR
     end
   end
 
