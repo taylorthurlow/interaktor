@@ -1,3 +1,7 @@
+This is a fork of Interactor. This README has not yet been updated to reflect that.
+
+---
+
 # Interactor
 
 [![Gem Version](https://img.shields.io/gem/v/interactor.svg)](http://rubygems.org/gems/interactor)
