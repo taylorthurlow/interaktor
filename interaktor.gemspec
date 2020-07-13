@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name = "interaktor"
-  spec.version = "0.1.0"
+  spec.version = "0.1.1"
 
   spec.author = "Taylor Thurlow"
   spec.email = "taylorthurlow@me.com"
@@ -10,6 +10,7 @@ Gem::Specification.new do |spec|
   spec.license = "MIT"
   spec.test_files = spec.files.grep(/^spec/)
   spec.required_ruby_version = ">= 2.5"
+  spec.require_path = "lib"
 
   spec.add_runtime_dependency "zeitwerk", "~> 2.3.1"
 
