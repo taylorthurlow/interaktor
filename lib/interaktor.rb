@@ -1,6 +1,7 @@
 require "zeitwerk"
 
 loader = Zeitwerk::Loader.for_gem
+loader.push_dir(File.expand_path("../lib", __dir__))
 loader.setup
 
 module Interaktor
