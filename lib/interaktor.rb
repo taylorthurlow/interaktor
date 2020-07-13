@@ -44,6 +44,14 @@ module Interaktor
       @failure_attributes ||= []
     end
 
+    # The list of attributes which are required to be passed in when calling
+    # `#fail!` from within the interaktor.
+    #
+    # @return [Array<Symbol>]
+    def success_attributes
+      @success_attributes ||= []
+    end
+
     # A DSL method for documenting required interaktor attributes.
     #
     # @param attributes [Symbol, Array<Symbol>] the list of attribute names
@@ -92,6 +100,15 @@ module Interaktor
       failure_attributes.concat attributes
     end
 
+    # A DSL method for documenting required interaktor success attributes.
+    #
+    # @param attributes [Symbol, Array<Symbol>] the list of attribute names
+    #
+    # @return [void]
+    def success(*attributes)
+      success_attributes.concat attributes
+    end
+
     # Invoke an Interaktor. This is the primary public API method to an
     # interaktor.
     #
@@ -102,7 +119,9 @@ module Interaktor
     def call(context = {})
       verify_attribute_presence(context)
 
-      new(context).tap(&:run).context
+      catch(:early_return) do
+        new(context).tap(&:run).context
+      end
     end
 
     # Invoke an Interaktor. This method behaves identically to `#call`, with
@@ -118,7 +137,9 @@ module Interaktor
     def call!(context = {})
       verify_attribute_presence(context)
 
-      new(context).tap(&:run!).context
+      catch(:early_return) do
+        new(context).tap(&:run!).context
+      end
     end
 
     private
@@ -159,6 +180,25 @@ module Interaktor
     raise "Missing failure attrs: #{missing_attrs.join(", ")}" if missing_attrs.any?
 
     context.fail!(failure_attributes)
+  end
+
+  # Terminate execution of the current interaktor and copy the success
+  # attributes into the context.
+  #
+  # @param success_attributes [Hash{Symbol=>Object}] the context attributes
+  #
+  # @return [void]
+  def success!(success_attributes = {})
+    # Make sure we have all required attributes
+    missing_attrs = self.class.success_attributes
+                        .reject { |success_attr| success_attributes.key?(success_attr) }
+    raise "Missing success attrs: #{missing_attrs.join(", ")}" if missing_attrs.any?
+
+    # Make sure we haven't provided any unknown attributes
+    unknown_attrs = success_attributes.keys.reject { |success_attr| self.class.success_attributes.include?(success_attr) }
+    raise "Unknown success attrs: #{unknown_attrs.join(", ")}" if unknown_attrs.any?
+
+    context.success!(success_attributes)
   end
 
   # Invoke an Interaktor instance without any hooks, tracking, or rollback. It

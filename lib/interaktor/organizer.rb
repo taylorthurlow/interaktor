@@ -40,7 +40,7 @@ module Interaktor::Organizer
     # @return [void]
     def call
       self.class.organized.each do |interaktor|
-        interaktor.call!(context)
+        catch(:early_return) { interaktor.call!(context) }
       end
     end
 

@@ -55,6 +55,16 @@ class Interaktor::Context < OpenStruct
     raise Interaktor::Failure, self
   end
 
+  # @param context [Hash] data to be merged into the existing context
+  #
+  # @raises [Interaktor::Failure]
+  #
+  # @return [void]
+  def success!(context = {})
+    context.each { |key, value| self[key.to_sym] = value }
+    throw :early_return, self
+  end
+
   # Roll back the Interaktor::Context. Any interaktors to which this context
   # has been passed and which have been successfully called are asked to roll
   # themselves back by invoking their `#rollback` methods.
