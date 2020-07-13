@@ -84,6 +84,7 @@ module Interactor
     # Returns true if rolled back successfully or false if already rolled back.
     def rollback!
       return false if @rolled_back
+
       _called.reverse_each(&:rollback)
       @rolled_back = true
     end

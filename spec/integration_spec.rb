@@ -307,9 +307,7 @@ describe "Integration" do
     it "calls and runs hooks in the proper sequence" do
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -323,7 +321,7 @@ describe "Integration" do
              :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
              :after4, :around_after4,
              :around_before5, :before5, :call5, :after5, :around_after5,
-             :after, :around_after,
+             :after, :around_after
            ])
     end
   end
@@ -353,9 +351,7 @@ describe "Integration" do
     it "aborts" do
       expect {
         organizer.call(context)
-      }.not_to change {
-        context.steps
-      }
+      }.not_to change(context, :steps)
     end
   end
 
@@ -385,12 +381,10 @@ describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue
+        rescue StandardError
           nil
         end
-      }.not_to change {
-        context.steps
-      }
+      }.not_to change(context, :steps)
     end
 
     it "raises the error" do
@@ -424,9 +418,7 @@ describe "Integration" do
     it "aborts" do
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before,
            ])
     end
@@ -457,12 +449,10 @@ describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue
+        rescue StandardError
           nil
         end
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before,
            ])
     end
@@ -498,9 +488,7 @@ describe "Integration" do
     it "rolls back successfully called interactors and the failed interactor" do
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -521,7 +509,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
   end
@@ -551,12 +539,10 @@ describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue
+        rescue StandardError
           nil
         end
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -577,7 +563,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
 
@@ -612,9 +598,7 @@ describe "Integration" do
     it "rolls back successfully called interactors and the failed interactor" do
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -636,7 +620,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
   end
@@ -666,12 +650,10 @@ describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue
+        rescue StandardError
           nil
         end
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -693,7 +675,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
 
@@ -735,9 +717,7 @@ describe "Integration" do
     it "rolls back successfully called interactors" do
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -746,7 +726,7 @@ describe "Integration" do
              :after2, :around_after2,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
   end
@@ -783,12 +763,10 @@ describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue
+        rescue StandardError
           nil
         end
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -797,7 +775,7 @@ describe "Integration" do
              :after2, :around_after2,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
 
@@ -839,9 +817,7 @@ describe "Integration" do
     it "rolls back successfully called interactors" do
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -851,7 +827,7 @@ describe "Integration" do
              :around_before3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
   end
@@ -888,12 +864,10 @@ describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue
+        rescue StandardError
           nil
         end
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -903,7 +877,7 @@ describe "Integration" do
              :around_before3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
 
@@ -945,9 +919,7 @@ describe "Integration" do
     it "rolls back successfully called interactors" do
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -957,7 +929,7 @@ describe "Integration" do
              :around_before3, :before3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
   end
@@ -994,12 +966,10 @@ describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue
+        rescue StandardError
           nil
         end
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1009,7 +979,7 @@ describe "Integration" do
              :around_before3, :before3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
 
@@ -1051,9 +1021,7 @@ describe "Integration" do
     it "rolls back successfully called interactors and the failed interactor" do
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1064,7 +1032,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
   end
@@ -1101,12 +1069,10 @@ describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue
+        rescue StandardError
           nil
         end
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1117,7 +1083,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
 
@@ -1159,9 +1125,7 @@ describe "Integration" do
     it "rolls back successfully called interactors and the failed interactor" do
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1172,7 +1136,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
   end
@@ -1209,12 +1173,10 @@ describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue
+        rescue StandardError
           nil
         end
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1225,7 +1187,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
 
@@ -1267,9 +1229,7 @@ describe "Integration" do
     it "rolls back successfully called interactors" do
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1283,7 +1243,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
   end
@@ -1320,12 +1280,10 @@ describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue
+        rescue StandardError
           nil
         end
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1339,7 +1297,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
 
@@ -1381,9 +1339,7 @@ describe "Integration" do
     it "rolls back successfully called interactors" do
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1398,7 +1354,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
   end
@@ -1435,12 +1391,10 @@ describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue
+        rescue StandardError
           nil
         end
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1455,7 +1409,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
 
@@ -1497,9 +1451,7 @@ describe "Integration" do
     it "rolls back successfully called interactors" do
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1514,7 +1466,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
   end
@@ -1551,12 +1503,10 @@ describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue
+        rescue StandardError
           nil
         end
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1571,7 +1521,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
 
@@ -1613,9 +1563,7 @@ describe "Integration" do
     it "rolls back successfully called interactors and the failed interactor" do
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1631,7 +1579,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
   end
@@ -1668,12 +1616,10 @@ describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue
+        rescue StandardError
           nil
         end
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1689,7 +1635,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
 
@@ -1731,9 +1677,7 @@ describe "Integration" do
     it "rolls back successfully called interactors and the failed interactor" do
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1749,7 +1693,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
   end
@@ -1786,12 +1730,10 @@ describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue
+        rescue StandardError
           nil
         end
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before, :before,
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
@@ -1807,7 +1749,7 @@ describe "Integration" do
              :rollback3,
              :rollback2c,
              :rollback2b,
-             :rollback2a,
+             :rollback2a
            ])
     end
 
@@ -1825,9 +1767,7 @@ describe "Integration" do
 
       expect {
         organizer.call(context)
-      }.to change {
-             context.steps
-           }.from([]).to([
+      }.to change(context, :steps).from([]).to([
              :around_before2, :before2,
              :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
              :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
@@ -1839,7 +1779,7 @@ describe "Integration" do
              :around_before4b, :before4b, :call4b, :after4b, :around_after4b,
              :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
              :after4, :around_after4,
-             :around_before5, :before5, :call5, :after5, :around_after5,
+             :around_before5, :before5, :call5, :after5, :around_after5
            ])
     end
   end

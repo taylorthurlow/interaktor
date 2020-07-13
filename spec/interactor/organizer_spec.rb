@@ -1,8 +1,8 @@
 module Interactor
   describe Organizer do
-    include_examples :lint
-
     let(:organizer) { Class.new.send(:include, Organizer) }
+
+    include_examples "lint"
 
     describe ".organize" do
       let(:interactor2) { double(:interactor2) }
@@ -11,17 +11,13 @@ module Interactor
       it "sets interactors given class arguments" do
         expect {
           organizer.organize(interactor2, interactor3)
-        }.to change {
-          organizer.organized
-        }.from([]).to([interactor2, interactor3])
+        }.to change(organizer, :organized).from([]).to([interactor2, interactor3])
       end
 
       it "sets interactors given an array of classes" do
         expect {
           organizer.organize([interactor2, interactor3])
-        }.to change {
-          organizer.organized
-        }.from([]).to([interactor2, interactor3])
+        }.to change(organizer, :organized).from([]).to([interactor2, interactor3])
       end
 
       it "allows multiple organize calls" do
@@ -29,9 +25,7 @@ module Interactor
         expect {
           organizer.organize(interactor2, interactor3)
           organizer.organize(interactor4)
-        }.to change {
-          organizer.organized
-        }.from([]).to([interactor2, interactor3, interactor4])
+        }.to change(organizer, :organized).from([]).to([interactor2, interactor3, interactor4])
       end
     end
 

@@ -1,3 +1,3 @@
 describe Interactor do
-  include_examples :lint
+  include_examples "lint"
 end

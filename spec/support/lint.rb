@@ -1,4 +1,4 @@
-shared_examples :lint do
+shared_examples "lint" do
   let(:interactor) { Class.new.send(:include, described_class) }
 
   describe ".call" do

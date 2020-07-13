@@ -34,7 +34,7 @@ module Interactor
     end
 
     def required(*attributes)
-      self.required_attributes.concat attributes
+      required_attributes.concat attributes
 
       attributes.each do |attribute|
         define_method(attribute) { @context.send(attribute) }
@@ -45,16 +45,16 @@ module Interactor
     end
 
     def optional(*attributes)
-      self.optional_attributes.concat attributes
+      optional_attributes.concat attributes
 
       attributes.each do |attribute|
         define_method(attribute) { @context.send(attribute) }
         define_method("#{attribute}=".to_sym) do |value|
           unless @context.to_h.keys.include?(attribute)
             raise <<~ERROR
-                    You can't assign a value to an optional parameter if you didn't
-                    initialize the interactor with it in the first place.
-                  ERROR
+              You can't assign a value to an optional parameter if you didn't
+              initialize the interactor with it in the first place.
+            ERROR
           end
 
           @context.send("#{attribute}=".to_sym, value)
@@ -63,7 +63,7 @@ module Interactor
     end
 
     def failure(*attributes)
-      self.failure_attributes.concat attributes
+      failure_attributes.concat attributes
     end
 
     def call(context = {})
@@ -84,10 +84,10 @@ module Interactor
       # TODO: Add "allow_nil?" option to required attributes
 
       # Make sure we have all required attributes
-      missing_attrs = self.required_attributes
+      missing_attrs = required_attributes
                           .reject { |required_attr| context.to_h.key?(required_attr) }
       raise <<~ERROR if missing_attrs.any?
-        Required attribute(s) were not provided when initializing #{self.name} interactor:
+        Required attribute(s) were not provided when initializing #{name} interactor:
           #{missing_attrs.join("\n  ")}
       ERROR
     end
@@ -129,7 +129,7 @@ module Interactor
       call
       @context.called!(self)
     end
-  rescue
+  rescue StandardError
     @context.rollback!
     raise
   end
@@ -139,14 +139,12 @@ module Interactor
   # each interactor class.
   #
   # Returns nothing.
-  def call
-  end
+  def call; end
 
   # Public: Reverse prior invocation of an Interactor instance. Any interactor
   # class that requires undoing upon downstream failure is expected to overwrite
   # the "rollback" instance method.
   #
   # Returns nothing.
-  def rollback
-  end
+  def rollback; end
 end

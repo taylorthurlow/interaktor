@@ -63,78 +63,66 @@ module Interactor
         expect {
           begin
             context.fail!
-          rescue
+          rescue StandardError
             nil
           end
-        }.to change {
-          context.success?
-        }.from(true).to(false)
+        }.to change(context, :success?).from(true).to(false)
       end
 
       it "sets failure to true" do
         expect {
           begin
             context.fail!
-          rescue
+          rescue StandardError
             nil
           end
-        }.to change {
-          context.failure?
-        }.from(false).to(true)
+        }.to change(context, :failure?).from(false).to(true)
       end
 
       it "preserves failure" do
         begin
           context.fail!
-        rescue
+        rescue StandardError
           nil
         end
 
         expect {
           begin
             context.fail!
-          rescue
+          rescue StandardError
             nil
           end
-        }.not_to change {
-          context.failure?
-        }
+        }.not_to change(context, :failure?)
       end
 
       it "preserves the context" do
         expect {
           begin
             context.fail!
-          rescue
+          rescue StandardError
             nil
           end
-        }.not_to change {
-          context.foo
-        }
+        }.not_to change(context, :foo)
       end
 
       it "updates the context" do
         expect {
           begin
             context.fail!(foo: "baz")
-          rescue
+          rescue StandardError
             nil
           end
-        }.to change {
-          context.foo
-        }.from("bar").to("baz")
+        }.to change(context, :foo).from("bar").to("baz")
       end
 
       it "updates the context with a string key" do
         expect {
           begin
             context.fail!("foo" => "baz")
-          rescue
+          rescue StandardError
             nil
           end
-        }.to change {
-          context.foo
-        }.from("bar").to("baz")
+        }.to change(context, :foo).from("bar").to("baz")
       end
 
       it "raises failure" do
@@ -145,8 +133,8 @@ module Interactor
 
       it "makes the context available from the failure" do
         context.fail!
-      rescue Failure => error
-        expect(error.context).to eq(context)
+      rescue Failure => e
+        expect(e.context).to eq(context)
       end
     end
 
@@ -159,9 +147,7 @@ module Interactor
         expect {
           context.called!(instance1)
           context.called!(instance2)
-        }.to change {
-          context._called
-        }.from([]).to([instance1, instance2])
+        }.to change(context, :_called).from([]).to([instance1, instance2])
       end
     end
 
