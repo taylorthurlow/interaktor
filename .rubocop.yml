@@ -34,6 +34,12 @@ Gemspec:
 Layout:
   Enabled: true
 
+Layout/HeredocIndentation:
+  Enabled: false
+
+Layout/ClosingHeredocIndentation:
+  Enabled: false
+
 Layout/LineLength:
   Enabled: true
   Max: 120
