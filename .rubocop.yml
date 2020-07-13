@@ -1,45 +1,307 @@
-# This should always correspond to the required Ruby version specified in the
-# gemspec.
+require:
+  - rubocop-rspec
+  - rubocop-performance
+
 AllCops:
   TargetRubyVersion: 2.5
+  Exclude:
+    - "tmp/**/*"
+    - "vendor/**/*"
 
-# TODO: What should we do here?
+###########
+# BUNDLER #
+###########
+
+Bundler:
+  Enabled: true
+
+Bundler/GemComment:
+  Enabled: true
+  OnlyFor: ["bitbucket", "gist", "git", "github", "source"]
+  IgnoredGems: []
+
+###########
+# GEMSPEC #
+###########
+
+Gemspec:
+  Enabled: true
+
+##########
+# LAYOUT #
+##########
+
+Layout:
+  Enabled: true
+
+Layout/LineLength:
+  Enabled: true
+  Max: 120
+
+Layout/RescueEnsureAlignment:
+  Enabled: false
+
+Layout/CaseIndentation:
+  Enabled: false
+
+# The following cops are not yet enabled by default.
+
+Layout/EmptyLinesAroundAttributeAccessor:
+  Enabled: true
+
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
+
+# Rufo already agrees with these
+
+Layout/MultilineMethodCallIndentation:
+  Enabled: false
+
+Layout/ArgumentAlignment:
+  Enabled: false
+
+Layout/FirstHashElementIndentation:
+  Enabled: false
+
+Layout/FirstArrayElementIndentation:
+  Enabled: false
+
+Layout/IndentationWidth:
+  Enabled: false
+
+Layout/ElseAlignment:
+  Enabled: false
+
+Layout/EndAlignment:
+  Enabled: false
+
+Layout/EmptyLinesAroundMethodBody:
+  Enabled: false
+
+# Make these agree with Rufo
+
+Layout/SpaceInsideBlockBraces:
+  Enabled: true
+  EnforcedStyleForEmptyBraces: space
+
+########
+# LINT #
+########
+
+Lint:
+  Enabled: true
+
+# The following cops are not yet enabled by default.
+
+Lint/DeprecatedOpenSSLConstant:
+  Enabled: true
+
+Lint/MixedRegexpCaptureTypes:
+  Enabled: true
+
+Lint/StructNewOverride:
+  Enabled: true
+
+Lint/RaiseException:
+  Enabled: true
+
+###########
+# METRICS #
+###########
+
+Metrics:
+  Enabled: true
+
+Metrics/MethodLength:
+  Enabled: true
+  Max: 50
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: true
+  Max: 25
+  Exclude:
+    - "spec/**/*"
+    - "test/**/*"
+
+Metrics/CyclomaticComplexity:
+  Enabled: true
+  Max: 15
+
+Metrics/PerceivedComplexity:
+  Enabled: true
+  Max: 15
+
+Metrics/AbcSize:
+  Enabled: true
+  Max: 30
+
+##########
+# NAMING #
+##########
+
+Naming:
+  Enabled: true
+
+############
+# SECURITY #
+############
+
+Security:
+  Enabled: true
+
+#########
+# STYLE #
+#########
+
+Style:
+  Enabled: true
+
+Style/BlockDelimiters:
+  Enabled: true
+  EnforcedStyle: braces_for_chaining
+  Exclude:
+    - "spec/**/*"
+    - "test/**/*"
+
+Style/SymbolArray:
+  Enabled: false
+
+Style/WordArray:
+  Enabled: false
+
+Style/ClassAndModuleChildren:
+  Enabled: true
+  EnforcedStyle: compact
+
+Style/Documentation:
+  Enabled: false
+
+Style/DocumentationMethod:
+  Enabled: true
+  RequireForNonPublicMethods: true
+
+Style/NumericPredicate:
+  Enabled: true
+  EnforcedStyle: predicate
+
+Style/StringLiteralsInInterpolation:
+  Enabled: true
+  EnforcedStyle: double_quotes
+
+Style/TrailingCommaInHashLiteral:
+  Enabled: true
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInArrayLiteral:
+  Enabled: true
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInArguments:
+  Enabled: true
+  EnforcedStyleForMultiline: comma
+
+Style/StringLiterals:
+  Enabled: true
+  EnforcedStyle: double_quotes
+
 Style/FrozenStringLiteralComment:
   Enabled: false
 
-# Allow some style changes in the specs.
-AmbiguousBlockAssociation:
-  Exclude:
-    - spec/**/*
-Metrics/BlockLength:
-  Exclude:
-    - spec/**/*
-Metrics/ModuleLength:
-  Exclude:
-    - spec/**/*
-Style/BlockDelimiters:
-  Exclude:
-    - spec/**/*
+Style/RedundantReturn:
+  Enabled: true
 
-# Here, inconsistent indentation helps to understand tree nature of callbacks.
-Layout/ArrayAlignment:
-  Exclude:
-    - spec/integration_spec.rb
+Style/TernaryParentheses:
+  Enabled: true
 
-# TODO: Remove when throw is used rather than raise in Interactor::Context.fail!
-Lint/SuppressedException:
-  Exclude:
-    - lib/interactor.rb
-Style/RescueModifier:
-  Exclude:
-    - spec/**/*
+Style/RedundantParentheses:
+  Enabled: true
 
-# These style conventions are personal preference.
-Style/EmptyMethod:
+# The following cops are not yet enabled or disabled by default.
+
+Style/AccessorGrouping:
   Enabled: false
-Layout/IndentArray:
-  EnforcedStyle: consistent
-Style/StringLiterals:
-  EnforcedStyle: double_quotes
-Style/SymbolArray:
+
+Style/BisectedAttrAccessor:
+  Enabled: true
+
+Style/RedundantAssignment:
+  Enabled: true
+
+Style/ExponentialNotation:
+  Enabled: true
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
+
+Style/RedundantFetchBlock:
+  Enabled: true
+
+Style/RedundantRegexpCharacterClass:
+  Enabled: true
+
+Style/RedundantRegexpEscape:
+  Enabled: true
+
+Style/SlicingWithRange:
+  Enabled: true
+
+#########
+# RSPEC #
+#########
+
+RSpec:
+  Enabled: true
+
+RSpec/ExampleLength:
   Enabled: false
+
+RSpec/MultipleExpectations:
+  Enabled: false
+
+RSpec/AnyInstance:
+  Enabled: false
+
+RSpec/MessageSpies:
+  Enabled: false
+
+###############
+# PERFORMANCE #
+###############
+
+Performance:
+  Enabled: true
+
+# These cops are not enabled or disabled by default.
+
+Performance/AncestorsInclude:
+  Enabled: true
+
+Performance/BigDecimalWithNumericArgument:
+  Enabled: true
+
+Performance/RedundantSortBlock:
+  Enabled: true
+
+Performance/RedundantStringChars:
+  Enabled: true
+
+Performance/ReverseFirst:
+  Enabled: true
+
+Performance/SortReverse:
+  Enabled: true
+
+Performance/Squeeze:
+  Enabled: true
+
+Performance/StringInclude:
+  Enabled: true
