@@ -193,15 +193,15 @@ Style/StringLiteralsInInterpolation:
 
 Style/TrailingCommaInHashLiteral:
   Enabled: true
-  EnforcedStyleForMultiline: comma
+  EnforcedStyleForMultiline: consistent_comma
 
 Style/TrailingCommaInArrayLiteral:
   Enabled: true
-  EnforcedStyleForMultiline: comma
+  EnforcedStyleForMultiline: consistent_comma
 
 Style/TrailingCommaInArguments:
   Enabled: true
-  EnforcedStyleForMultiline: comma
+  EnforcedStyleForMultiline: consistent_comma
 
 Style/StringLiterals:
   Enabled: true
