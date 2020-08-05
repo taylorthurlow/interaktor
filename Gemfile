@@ -11,4 +11,5 @@ gem "solargraph", "~> 0.39.11"
 group :test do
   gem "codeclimate-test-reporter", "~> 1.0.9", require: false
   gem "rspec", "~> 3.9.0"
+  gem "pry-byebug"
 end
