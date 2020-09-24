@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = ">= 2.5"
   spec.require_path = "lib"
 
-  spec.add_runtime_dependency "zeitwerk", "~> 2.3.1"
+  spec.add_runtime_dependency "zeitwerk", "~> 2.0"
 
   spec.add_development_dependency "rake", "~> 13.0"
 end
