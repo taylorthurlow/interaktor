@@ -1,64 +1,75 @@
 shared_examples "lint" do
-  let(:interaktor) { Class.new.send(:include, described_class) }
+  let(:interaktor) { Class.new.include(described_class) }
 
   describe ".call" do
-    let(:context) { double(:context) }
-    let(:instance) { double(:instance, context: context) }
+    let(:context) { instance_double(Interaktor::Context) }
+    let(:instance) { instance_double(interaktor) }
 
     it "calls an instance with the given context" do
-      expect(interaktor).to receive(:new).once.with(foo: "bar") { instance }
+      instance.instance_variable_set(:@context, context)
+      expect(interaktor).to receive(:new).once.with(foo: "bar").and_return(instance)
       expect(instance).to receive(:run).once.with(no_args)
 
-      expect(interaktor.call(foo: "bar")).to eq(context)
+      resulting_context = interaktor.call(foo: "bar")
+
+      expect(resulting_context).to eq(context)
     end
 
     it "provides a blank context if none is given" do
-      expect(interaktor).to receive(:new).once.with({}) { instance }
+      instance.instance_variable_set(:@context, context)
+      expect(interaktor).to receive(:new).once.with({}).and_return(instance)
       expect(instance).to receive(:run).once.with(no_args)
 
-      expect(interaktor.call).to eq(context)
+      resulting_context = interaktor.call({})
+
+      expect(resulting_context).to eq(context)
     end
   end
 
   describe ".call!" do
-    let(:context) { double(:context) }
-    let(:instance) { double(:instance, context: context) }
+    let(:context) { instance_double(Interaktor::Context) }
+    let(:instance) { instance_double(interaktor) }
 
     it "calls an instance with the given context" do
-      expect(interaktor).to receive(:new).once.with(foo: "bar") { instance }
+      instance.instance_variable_set(:@context, context)
+      expect(interaktor).to receive(:new).once.with(foo: "bar").and_return(instance)
       expect(instance).to receive(:run!).once.with(no_args)
 
-      expect(interaktor.call!(foo: "bar")).to eq(context)
+      resulting_context = interaktor.call!(foo: "bar")
+
+      expect(resulting_context).to eq(context)
     end
 
     it "provides a blank context if none is given" do
-      expect(interaktor).to receive(:new).once.with({}) { instance }
+      instance.instance_variable_set(:@context, context)
+      expect(interaktor).to receive(:new).once.with({}).and_return(instance)
       expect(instance).to receive(:run!).once.with(no_args)
 
-      expect(interaktor.call!).to eq(context)
+      resulting_context = interaktor.call!({})
+
+      expect(resulting_context).to eq(context)
     end
   end
 
   describe ".new" do
-    let(:context) { double(:context) }
+    let(:context) { instance_double(Interaktor::Context) }
 
     it "initializes a context" do
-      expect(Interaktor::Context).to receive(:build)
-                                       .once.with(foo: "bar") { context }
+      expect(Interaktor::Context).to receive(:build).once.with(foo: "bar").and_return(context)
 
       instance = interaktor.new(foo: "bar")
 
-      expect(instance).to be_a(interaktor)
-      expect(instance.context).to eq(context)
+      expect(instance).to be_an(interaktor)
+      expect(instance.instance_variable_get(:@context)).to eq(context)
     end
 
     it "initializes a blank context if none is given" do
-      expect(Interaktor::Context).to receive(:build).once.with({}) { context }
+      expect(Interaktor::Context).to receive(:build).once.with({}).and_return(context)
 
       instance = interaktor.new
 
       expect(instance).to be_a(interaktor)
-      expect(instance.context).to eq(context)
+      expect(instance.instance_variable_get(:@context)).to eq(context)
     end
   end
 

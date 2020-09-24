@@ -14,9 +14,6 @@ module Interaktor
       extend ClassMethods
       include Hooks
     end
-
-    # @return [Interaktor::Context] this should not be used publicly
-    attr_accessor :context
   end
 
   module ClassMethods
@@ -61,9 +58,9 @@ module Interaktor
       required_attributes.concat attributes
 
       attributes.each do |attribute|
-        define_method(attribute) { context.send(attribute) }
+        define_method(attribute) { @context.send(attribute) }
         define_method("#{attribute}=".to_sym) do |value|
-          context.send("#{attribute}=".to_sym, value)
+          @context.send("#{attribute}=".to_sym, value)
         end
       end
     end
@@ -77,16 +74,16 @@ module Interaktor
       optional_attributes.concat attributes
 
       attributes.each do |attribute|
-        define_method(attribute) { context.send(attribute) }
+        define_method(attribute) { @context.send(attribute) }
         define_method("#{attribute}=".to_sym) do |value|
-          unless context.to_h.key?(attribute)
+          unless @context.to_h.key?(attribute)
             raise <<~ERROR
                     You can't assign a value to an optional parameter if you didn't
                     initialize the interaktor with it in the first place.
                   ERROR
           end
 
-          context.send("#{attribute}=".to_sym, value)
+          @context.send("#{attribute}=".to_sym, value)
         end
       end
     end
@@ -120,7 +117,7 @@ module Interaktor
       verify_attribute_presence(context)
 
       catch(:early_return) do
-        new(context).tap(&:run).context
+        new(context).tap(&:run).instance_variable_get(:@context)
       end
     end
 
@@ -138,7 +135,7 @@ module Interaktor
       verify_attribute_presence(context)
 
       catch(:early_return) do
-        new(context).tap(&:run!).context
+        new(context).tap(&:run!).instance_variable_get(:@context)
       end
     end
 
@@ -179,7 +176,7 @@ module Interaktor
                         .reject { |failure_attr| failure_attributes.key?(failure_attr) }
     raise "Missing failure attrs: #{missing_attrs.join(", ")}" if missing_attrs.any?
 
-    context.fail!(failure_attributes)
+    @context.fail!(failure_attributes)
   end
 
   # Terminate execution of the current interaktor and copy the success
@@ -198,7 +195,7 @@ module Interaktor
     unknown_attrs = success_attributes.keys.reject { |success_attr| self.class.success_attributes.include?(success_attr) }
     raise "Unknown success attrs: #{unknown_attrs.join(", ")}" if unknown_attrs.any?
 
-    context.success!(success_attributes)
+    @context.success!(success_attributes)
   end
 
   # Invoke an Interaktor instance without any hooks, tracking, or rollback. It
@@ -240,10 +237,10 @@ module Interaktor
   def run!
     with_hooks do
       call
-      context.called!(self)
+      @context.called!(self)
     end
   rescue StandardError
-    context.rollback!
+    @context.rollback!
     raise
   end
 end

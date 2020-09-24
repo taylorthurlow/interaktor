@@ -2,24 +2,24 @@ module Interaktor
   describe Context do
     describe ".build" do
       it "converts the given hash to a context" do
-        context = Context.build(foo: "bar")
+        context = described_class.build(foo: "bar")
 
-        expect(context).to be_a(Context)
+        expect(context).to be_a(described_class)
         expect(context.foo).to eq("bar")
       end
 
       it "builds an empty context if no hash is given" do
-        context = Context.build
+        context = described_class.build
 
-        expect(context).to be_a(Context)
+        expect(context).to be_a(described_class)
         expect(context.send(:table)).to eq({})
       end
 
       it "doesn't affect the original hash" do
         hash = { foo: "bar" }
-        context = Context.build(hash)
+        context = described_class.build(hash)
 
-        expect(context).to be_a(Context)
+        expect(context).to be_a(described_class)
         expect {
           context.foo = "baz"
         }.not_to change {
@@ -28,10 +28,10 @@ module Interaktor
       end
 
       it "preserves an already built context" do
-        context1 = Context.build(foo: "bar")
-        context2 = Context.build(context1)
+        context1 = described_class.build(foo: "bar")
+        context2 = described_class.build(context1)
 
-        expect(context2).to be_a(Context)
+        expect(context2).to be_a(described_class)
         expect {
           context2.foo = "baz"
         }.to change {
@@ -41,7 +41,7 @@ module Interaktor
     end
 
     describe "#success?" do
-      let(:context) { Context.build }
+      let(:context) { described_class.build }
 
       it "is true by default" do
         expect(context.success?).to eq(true)
@@ -49,7 +49,7 @@ module Interaktor
     end
 
     describe "#failure?" do
-      let(:context) { Context.build }
+      let(:context) { described_class.build }
 
       it "is false by default" do
         expect(context.failure?).to eq(false)
@@ -57,7 +57,7 @@ module Interaktor
     end
 
     describe "#fail!" do
-      let(:context) { Context.build(foo: "bar") }
+      let(:context) { described_class.build(foo: "bar") }
 
       it "sets success to false" do
         expect {
@@ -139,9 +139,9 @@ module Interaktor
     end
 
     describe "#called!" do
-      let(:context) { Context.build }
-      let(:instance1) { double(:instance1) }
-      let(:instance2) { double(:instance2) }
+      let(:context) { described_class.build }
+      let(:instance1) { instance_double(Interaktor) }
+      let(:instance2) { instance_double(Interaktor) }
 
       it "appends to the internal list of called instances" do
         expect {
@@ -152,9 +152,9 @@ module Interaktor
     end
 
     describe "#rollback!" do
-      let(:context) { Context.build }
-      let(:instance1) { double(:instance1) }
-      let(:instance2) { double(:instance2) }
+      let(:context) { described_class.build }
+      let(:instance1) { instance_double(Interaktor) }
+      let(:instance2) { instance_double(Interaktor) }
 
       before do
         allow(context).to receive(:_called) { [instance1, instance2] }
@@ -177,7 +177,7 @@ module Interaktor
     end
 
     describe "#_called" do
-      let(:context) { Context.build }
+      let(:context) { described_class.build }
 
       it "is empty by default" do
         expect(context._called).to eq([])

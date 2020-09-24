@@ -1,12 +1,12 @@
 module Interaktor
   describe Organizer do
-    let(:organizer) { Class.new.send(:include, Organizer) }
+    let(:organizer) { Class.new.include(described_class) }
 
     include_examples "lint"
 
     describe ".organize" do
-      let(:interaktor2) { double(:interaktor2) }
-      let(:interaktor3) { double(:interaktor3) }
+      let(:interaktor2) { instance_double(Interaktor) }
+      let(:interaktor3) { instance_double(Interaktor) }
 
       it "sets interaktors given class arguments" do
         expect {
@@ -21,7 +21,7 @@ module Interaktor
       end
 
       it "allows multiple organize calls" do
-        interaktor4 = double(:interaktor4)
+        interaktor4 = instance_double(Interaktor)
         expect {
           organizer.organize(interaktor2, interaktor3)
           organizer.organize(interaktor4)
@@ -36,20 +36,19 @@ module Interaktor
     end
 
     describe "#call" do
-      let(:instance) { organizer.new }
-      let(:context) { double(:context) }
-      let(:interaktor2) { double(:interaktor2) }
-      let(:interaktor3) { double(:interaktor3) }
-      let(:interaktor4) { double(:interaktor4) }
+      it "calls each interaktor in order with the context" do
+        instance = organizer.new
+        context = instance_double(Interaktor::Context)
+        interaktor2 = class_double(Class.new.include(Interaktor))
+        interaktor3 = class_double(Class.new.include(Interaktor))
+        interaktor4 = class_double(Class.new.include(Interaktor))
 
-      before do
-        allow(instance).to receive(:context) { context }
+        allow(instance).to receive(:context).and_return(context)
+        instance.instance_variable_set(:@context, context)
         allow(organizer).to receive(:organized) {
           [interaktor2, interaktor3, interaktor4]
         }
-      end
 
-      it "calls each interaktor in order with the context" do
         expect(interaktor2).to receive(:call!).once.with(context).ordered
         expect(interaktor3).to receive(:call!).once.with(context).ordered
         expect(interaktor4).to receive(:call!).once.with(context).ordered
