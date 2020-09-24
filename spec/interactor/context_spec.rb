@@ -22,9 +22,9 @@ module Interaktor
         expect(context).to be_a(described_class)
         expect {
           context.foo = "baz"
-        }.not_to change {
+        }.not_to(change {
           hash[:foo]
-        }
+        })
       end
 
       it "preserves an already built context" do

@@ -78,8 +78,9 @@ module Interaktor
         define_method("#{attribute}=".to_sym) do |value|
           unless @context.to_h.key?(attribute)
             raise <<~ERROR
-                    You can't assign a value to an optional parameter if you didn't
-                    initialize the interaktor with it in the first place.
+                    You can't assign a value to an optional parameter if you
+                    didn't initialize the interaktor with it in the first
+                    place.
                   ERROR
           end
 
@@ -192,7 +193,8 @@ module Interaktor
     raise "Missing success attrs: #{missing_attrs.join(", ")}" if missing_attrs.any?
 
     # Make sure we haven't provided any unknown attributes
-    unknown_attrs = success_attributes.keys.reject { |success_attr| self.class.success_attributes.include?(success_attr) }
+    unknown_attrs = success_attributes.keys
+                                      .reject { |success_attr| self.class.success_attributes.include?(success_attr) }
     raise "Unknown success attrs: #{unknown_attrs.join(", ")}" if unknown_attrs.any?
 
     @context.success!(success_attributes)

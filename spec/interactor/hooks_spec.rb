@@ -1,3 +1,5 @@
+# rubocop:disable RSpec/ScatteredSetup
+
 module Interaktor
   describe Hooks do
     describe "#with_hooks" do
@@ -356,3 +358,5 @@ module Interaktor
     end
   end
 end
+
+# rubocop:enable RSpec/ScatteredSetup

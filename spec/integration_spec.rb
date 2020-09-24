@@ -1,3 +1,8 @@
+# rubocop:disable RSpec/InstanceVariable
+# rubocop:disable RSpec/MultipleMemoizedHelpers
+# rubocop:disable RSpec/ScatteredSetup
+# rubocop:disable Style/DocumentationMethod
+
 describe "Integration" do
   def build_interaktor(&block)
     interaktor = Class.new.send(:include, Interaktor)
@@ -1784,3 +1789,8 @@ describe "Integration" do
     end
   end
 end
+
+# rubocop:enable RSpec/InstanceVariable
+# rubocop:enable RSpec/MultipleMemoizedHelpers
+# rubocop:enable RSpec/ScatteredSetup
+# rubocop:enable Style/DocumentationMethod

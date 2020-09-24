@@ -4,7 +4,9 @@ require:
 
 AllCops:
   TargetRubyVersion: 2.5
+  NewCops: enable
   Exclude:
+    - "bin/**/*"
     - "tmp/**/*"
     - "vendor/**/*"
 
@@ -34,12 +36,6 @@ Gemspec:
 Layout:
   Enabled: true
 
-Layout/HeredocIndentation:
-  Enabled: false
-
-Layout/ClosingHeredocIndentation:
-  Enabled: false
-
 Layout/LineLength:
   Enabled: true
   Max: 120
@@ -50,13 +46,9 @@ Layout/RescueEnsureAlignment:
 Layout/CaseIndentation:
   Enabled: false
 
-# The following cops are not yet enabled by default.
-
-Layout/EmptyLinesAroundAttributeAccessor:
+Layout/SpaceAroundOperators:
   Enabled: true
-
-Layout/SpaceAroundMethodCallOperator:
-  Enabled: true
+  EnforcedStyleForExponentOperator: space
 
 # Rufo already agrees with these
 
@@ -90,6 +82,12 @@ Layout/SpaceInsideBlockBraces:
   Enabled: true
   EnforcedStyleForEmptyBraces: space
 
+Layout/HeredocIndentation:
+  Enabled: false
+
+Layout/ClosingHeredocIndentation:
+  Enabled: false
+
 ########
 # LINT #
 ########
@@ -97,19 +95,9 @@ Layout/SpaceInsideBlockBraces:
 Lint:
   Enabled: true
 
-# The following cops are not yet enabled by default.
-
-Lint/DeprecatedOpenSSLConstant:
-  Enabled: true
-
-Lint/MixedRegexpCaptureTypes:
-  Enabled: true
-
-Lint/StructNewOverride:
-  Enabled: true
-
-Lint/RaiseException:
-  Enabled: true
+# This one was giving a false positive
+Lint/RedundantCopDisableDirective:
+  Enabled: false
 
 ###########
 # METRICS #
@@ -123,6 +111,9 @@ Metrics/MethodLength:
   Max: 50
 
 Metrics/ClassLength:
+  Enabled: false
+
+Metrics/ModuleLength:
   Enabled: false
 
 Metrics/BlockLength:
@@ -179,8 +170,7 @@ Style/WordArray:
   Enabled: false
 
 Style/ClassAndModuleChildren:
-  Enabled: true
-  EnforcedStyle: compact
+  Enabled: false
 
 Style/Documentation:
   Enabled: false
@@ -197,17 +187,17 @@ Style/StringLiteralsInInterpolation:
   Enabled: true
   EnforcedStyle: double_quotes
 
+# Can never agree with Rufo
+
 Style/TrailingCommaInHashLiteral:
-  Enabled: true
-  EnforcedStyleForMultiline: consistent_comma
+  Enabled: false
 
 Style/TrailingCommaInArrayLiteral:
-  Enabled: true
-  EnforcedStyleForMultiline: consistent_comma
+  Enabled: false
 
 Style/TrailingCommaInArguments:
   Enabled: true
-  EnforcedStyleForMultiline: consistent_comma
+  EnforcedStyleForMultiline: comma
 
 Style/StringLiterals:
   Enabled: true
@@ -217,48 +207,16 @@ Style/FrozenStringLiteralComment:
   Enabled: false
 
 Style/RedundantReturn:
-  Enabled: true
+  Enabled: false
 
 Style/TernaryParentheses:
-  Enabled: true
+  Enabled: false
 
 Style/RedundantParentheses:
-  Enabled: true
-
-# The following cops are not yet enabled or disabled by default.
+  Enabled: false
 
 Style/AccessorGrouping:
   Enabled: false
-
-Style/BisectedAttrAccessor:
-  Enabled: true
-
-Style/RedundantAssignment:
-  Enabled: true
-
-Style/ExponentialNotation:
-  Enabled: true
-
-Style/HashEachMethods:
-  Enabled: true
-
-Style/HashTransformKeys:
-  Enabled: true
-
-Style/HashTransformValues:
-  Enabled: true
-
-Style/RedundantFetchBlock:
-  Enabled: true
-
-Style/RedundantRegexpCharacterClass:
-  Enabled: true
-
-Style/RedundantRegexpEscape:
-  Enabled: true
-
-Style/SlicingWithRange:
-  Enabled: true
 
 #########
 # RSPEC #
@@ -284,30 +242,4 @@ RSpec/MessageSpies:
 ###############
 
 Performance:
-  Enabled: true
-
-# These cops are not enabled or disabled by default.
-
-Performance/AncestorsInclude:
-  Enabled: true
-
-Performance/BigDecimalWithNumericArgument:
-  Enabled: true
-
-Performance/RedundantSortBlock:
-  Enabled: true
-
-Performance/RedundantStringChars:
-  Enabled: true
-
-Performance/ReverseFirst:
-  Enabled: true
-
-Performance/SortReverse:
-  Enabled: true
-
-Performance/Squeeze:
-  Enabled: true
-
-Performance/StringInclude:
   Enabled: true
