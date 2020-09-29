@@ -8,6 +8,8 @@ describe "Integration" do
     interaktor = Class.new.send(:include, Interaktor)
     interaktor.class_eval(&block) if block
     interaktor.class_eval do
+      optional :steps
+
       def unexpected_error!
         raise "foo"
       end
@@ -20,6 +22,8 @@ describe "Integration" do
     organizer.organize(options[:organize]) if options[:organize]
     organizer.class_eval(&block) if block
     organizer.class_eval do
+      optional :steps
+
       def unexpected_error!
         raise "foo"
       end

@@ -141,9 +141,7 @@ module Interaktor
       apply_default_optional_attributes(context)
       verify_attribute_presence(context)
 
-      catch(:early_return) do
-        new(context).tap(&:run).instance_variable_get(:@context)
-      end
+      new(context).tap(&:run).instance_variable_get(:@context)
     end
 
     # Invoke an Interaktor. This method behaves identically to `#call`, with
@@ -160,9 +158,7 @@ module Interaktor
       apply_default_optional_attributes(context)
       verify_attribute_presence(context)
 
-      catch(:early_return) do
-        new(context).tap(&:run!).instance_variable_get(:@context)
-      end
+      new(context).tap(&:run!).instance_variable_get(:@context)
     end
 
     private
@@ -284,7 +280,10 @@ module Interaktor
   # @return [void]
   def run!
     with_hooks do
-      call
+      catch(:early_return) do
+        call
+      end
+
       @context.called!(self)
     end
   rescue StandardError
