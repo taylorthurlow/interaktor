@@ -3,6 +3,8 @@
 [![Gem Version](https://img.shields.io/gem/v/interaktor.svg)](http://rubygems.org/gems/interaktor)
 [![Build Status](https://img.shields.io/travis/collectiveidea/interaktor/master.svg)](https://travis-ci.org/taylorthurlow/interaktor)
 
+**DISCLAIMER: Interaktor is under active development. Feel free to use it, but until 1.0 is released, any update could break compatibility with an older version.**
+
 **Interaktor** is a fork of [Interaktor by collectiveidea](https://github.com/collectiveidea/interaktor). While Interaktor is still used by collectiveidea internally, communication and progress has been slow in adapting to pull requests and issues. This inactivity combined with my desire to dial back on the Interaktor's inherent permissivity led me to fork it and create Interaktor.
 
 Fundamentally, Interaktor is the same as Interactor, but with a small DSL which is used to define attributes passed into the interaktor, such as:
