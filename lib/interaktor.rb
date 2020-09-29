@@ -33,6 +33,13 @@ module Interaktor
       @optional_attributes ||= []
     end
 
+    # A list of optional attributes and their default values.
+    #
+    # @return [Array<Symbol>]
+    def optional_defaults
+      @optional_defaults ||= {}
+    end
+
     # The list of attributes which are required to be passed in when calling
     # `#fail!` from within the interaktor.
     #
@@ -68,13 +75,17 @@ module Interaktor
     # A DSL method for documenting optional interaktor attributes.
     #
     # @param attributes [Symbol, Array<Symbol>] the list of attribute names
+    # @param options [Hash]
     #
     # @return [void]
-    def optional(*attributes)
+    def optional(*attributes, **options)
       optional_attributes.concat attributes
 
       attributes.each do |attribute|
+        # Define getter
         define_method(attribute) { @context.send(attribute) }
+
+        # Define setter
         define_method("#{attribute}=".to_sym) do |value|
           unless @context.to_h.key?(attribute)
             raise <<~ERROR
@@ -86,6 +97,12 @@ module Interaktor
 
           @context.send("#{attribute}=".to_sym, value)
         end
+
+        # Handle options
+        optional_defaults[attribute] = options[:default] if options[:default]
+        options.delete(:default)
+
+        raise "Unknown option(s): #{options.keys.join(", ")}" if options.any?
       end
     end
 
@@ -115,6 +132,7 @@ module Interaktor
     #
     # @return [Interaktor::Context] the context, following interaktor execution
     def call(context = {})
+      apply_default_optional_attributes(context)
       verify_attribute_presence(context)
 
       catch(:early_return) do
@@ -157,6 +175,18 @@ module Interaktor
         Required attribute(s) were not provided when initializing #{name} interaktor:
           #{missing_attrs.join("\n  ")}
       ERROR
+    end
+
+    # Given the list of optional default attribute values defined by the class,
+    # assign those default values to the context if they were omitted.
+    #
+    # @param context [Interaktor::Context]
+    #
+    # @return [void]
+    def apply_default_optional_attributes(context)
+      optional_defaults.each do |attribute, default|
+        context[attribute] ||= default
+      end
     end
   end
 
