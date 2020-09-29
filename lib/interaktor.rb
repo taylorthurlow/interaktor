@@ -169,7 +169,8 @@ module Interaktor
 
     # Check the provided context against the attributes defined with the DSL
     # methods, and determine if there are any attributes which are required and
-    # have not been provided.
+    # have not been provided, or if there are any attributes which have been
+    # provided but are not listed as either required or optional.
     #
     # @param context [Interaktor::Context] the context to check
     #
@@ -181,6 +182,14 @@ module Interaktor
       raise <<~ERROR if missing_attrs.any?
         Required attribute(s) were not provided when initializing #{name} interaktor:
           #{missing_attrs.join("\n  ")}
+      ERROR
+
+      allowed_attrs = required_attributes + optional_attributes
+      extra_attrs = context.to_h.keys.reject { |attr| allowed_attrs.include?(attr) }
+
+      raise <<~ERROR if extra_attrs.any?
+        One or more provided attributes were not recognized when initializing #{name} interaktor:
+          #{extra_attrs.join("\n  ")}
       ERROR
     end
 
