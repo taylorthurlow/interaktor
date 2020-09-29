@@ -59,16 +59,22 @@ module Interaktor
     # A DSL method for documenting required interaktor attributes.
     #
     # @param attributes [Symbol, Array<Symbol>] the list of attribute names
+    # @param options [Hash]
     #
     # @return [void]
-    def required(*attributes)
+    def required(*attributes, **options)
       required_attributes.concat attributes
 
       attributes.each do |attribute|
+        # Define getter
         define_method(attribute) { @context.send(attribute) }
+
+        # Define setter
         define_method("#{attribute}=".to_sym) do |value|
           @context.send("#{attribute}=".to_sym, value)
         end
+
+        raise "Unknown option(s): #{options.keys.join(", ")}" if options.any?
       end
     end
 
