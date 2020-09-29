@@ -157,6 +157,7 @@ module Interaktor
     #
     # @return [Interaktor::Context] the context, following interaktor execution
     def call!(context = {})
+      apply_default_optional_attributes(context)
       verify_attribute_presence(context)
 
       catch(:early_return) do
