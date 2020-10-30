@@ -176,7 +176,7 @@ module Interaktor
       missing_attrs = required_attributes.reject { |required_attr| context.to_h.key?(required_attr) }
 
       raise <<~ERROR if missing_attrs.any?
-        Required attribute(s) were not provided when initializing #{name} interaktor:
+        Required attribute(s) were not provided when initializing #{self.class} interaktor:
           #{missing_attrs.join("\n  ")}
       ERROR
 
@@ -184,7 +184,7 @@ module Interaktor
       extra_attrs = context.to_h.keys.reject { |attr| allowed_attrs.include?(attr) }
 
       raise <<~ERROR if extra_attrs.any?
-        One or more provided attributes were not recognized when initializing #{name} interaktor:
+        One or more provided attributes were not recognized when initializing #{self.class} interaktor:
           #{extra_attrs.join("\n  ")}
       ERROR
     end
