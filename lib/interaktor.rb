@@ -115,19 +115,31 @@ module Interaktor
     # A DSL method for documenting required interaktor failure attributes.
     #
     # @param attributes [Symbol, Array<Symbol>] the list of attribute names
+    # @param options [Hash]
     #
     # @return [void]
-    def failure(*attributes)
+    def failure(*attributes, **options)
       failure_attributes.concat attributes
+
+      attributes.each do |attribute|
+        # Handle options
+        raise "Unknown option(s): #{options.keys.join(", ")}" if options.any?
+      end
     end
 
     # A DSL method for documenting required interaktor success attributes.
     #
     # @param attributes [Symbol, Array<Symbol>] the list of attribute names
+    # @param options [Hash]
     #
     # @return [void]
-    def success(*attributes)
+    def success(*attributes, **options)
       success_attributes.concat attributes
+
+      attributes.each do |attribute|
+        # Handle options
+        raise "Unknown option(s): #{options.keys.join(", ")}" if options.any?
+      end
     end
 
     # Invoke an Interaktor. This is the primary public API method to an
