@@ -226,6 +226,18 @@ shared_examples "lint" do
       expect { interaktor.call }.to raise_error(RuntimeError, /Missing success attrs/)
     end
 
+    it "raises an exception when unknown attributes are provided" do
+      interaktor.class_eval { success :bar }
+
+      expect(interaktor).to receive(:new).once.with({}).and_call_original
+
+      interaktor.define_method(:call) do
+        success!(bar: "baz", baz: "wadus")
+      end
+
+      expect { interaktor.call }.to raise_error(RuntimeError, /Unknown success attrs/)
+    end
+
     describe "options" do
       it "raises an exception when an unknown option is provided" do
         expect {
