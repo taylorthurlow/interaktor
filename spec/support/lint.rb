@@ -179,6 +179,17 @@ shared_examples "lint" do
     end
 
     describe "options" do
+      it "accepts a default value for the attribute" do
+        interaktor.class_eval { optional :bar, default: "baz" }
+
+        expect(interaktor).to receive(:new).once.with(bar: "baz").and_call_original
+
+        result = interaktor.call
+
+        expect(result.success?).to be true
+        expect(result.bar).to eq "baz"
+      end
+
       it "raises an exception when an unknown option is provided" do
         expect {
           interaktor.class_eval { optional :bar, unknown: true }
