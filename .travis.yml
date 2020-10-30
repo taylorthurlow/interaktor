@@ -1,25 +1,14 @@
-after_success:
-  - bundle exec codeclimate-test-reporter
 before_install:
   - gem update bundler rake
-branches:
-  only:
-    - master
-    - v4
 cache: bundler
 language: ruby
 matrix:
   allow_failures:
     - rvm: ruby-head
-notifications:
-  webhooks:
-    on_start: always
-    urls:
-      - http://buildlight.collectiveidea.com/
 rvm:
   - "2.5"
   - "2.6"
   - "2.7"
   - ruby-head
-script: bundle exec rake
+script: bundle exec rspec
 sudo: false

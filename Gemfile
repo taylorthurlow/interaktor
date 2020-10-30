@@ -10,7 +10,7 @@ gem "solargraph"
 gem "guard-rspec", require: false
 
 group :test do
-  gem "codeclimate-test-reporter", "~> 1.0.9", require: false
   gem "pry-byebug"
   gem "rspec", "~> 3.9.0"
+  gem "simplecov"
 end
