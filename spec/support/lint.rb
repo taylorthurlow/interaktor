@@ -126,6 +126,21 @@ shared_examples "lint" do
       expect(result.bar).to eq "baz"
     end
 
+    it "creates a value setter" do
+      interaktor.class_eval { required :bar }
+
+      expect(interaktor).to receive(:new).once.with(bar: "baz").and_call_original
+
+      interaktor.define_method(:call) do
+        self.bar = "wadus"
+      end
+
+      result = interaktor.call(bar: "baz")
+
+      expect(result.success?).to be true
+      expect(result.bar).to eq "wadus"
+    end
+
     it "raises an exception when the attribute is not provided" do
       interaktor.class_eval { required :bar }
 
@@ -164,6 +179,21 @@ shared_examples "lint" do
 
       expect(result.success?).to be true
       expect(result.bar).to be_nil
+    end
+
+    it "creates a value setter" do
+      interaktor.class_eval { optional :bar }
+
+      expect(interaktor).to receive(:new).once.with(bar: "baz").and_call_original
+
+      interaktor.define_method(:call) do
+        self.bar = "wadus"
+      end
+
+      result = interaktor.call(bar: "baz")
+
+      expect(result.success?).to be true
+      expect(result.bar).to eq "wadus"
     end
 
     it "raises an exception when assigning a value to an optional parameter which was not originally provided" do
