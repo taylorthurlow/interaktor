@@ -166,6 +166,18 @@ shared_examples "lint" do
       expect(result.bar).to be_nil
     end
 
+    it "raises an exception when assigning a value to an optional parameter which was not originally provided" do
+      interaktor.class_eval { optional :bar }
+
+      expect(interaktor).to receive(:new).once.with({}).and_call_original
+
+      interaktor.define_method(:call) do
+        self.bar = "baz"
+      end
+
+      expect { interaktor.call }.to raise_exception(RuntimeError, /can't assign a value/)
+    end
+
     describe "options" do
       it "raises an exception when an unknown option is provided" do
         expect {
