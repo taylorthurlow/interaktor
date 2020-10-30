@@ -7,6 +7,7 @@ gem "rubocop-performance"
 gem "rubocop-rspec"
 gem "rufo", "~> 0.12.0"
 gem "solargraph"
+gem "guard-rspec", require: false
 
 group :test do
   gem "codeclimate-test-reporter", "~> 1.0.9", require: false
