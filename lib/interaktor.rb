@@ -33,7 +33,8 @@ module Interaktor
   # @return [void]
   def fail!(failure_attributes = {})
     # Make sure we have all required attributes
-    missing_attrs = self.class.failure_attributes
+    missing_attrs = self.class
+                        .failure_attributes
                         .reject { |failure_attr| failure_attributes.key?(failure_attr) }
     raise "Missing failure attrs: #{missing_attrs.join(", ")}" if missing_attrs.any?
 
@@ -48,7 +49,8 @@ module Interaktor
   # @return [void]
   def success!(success_attributes = {})
     # Make sure we have all required attributes
-    missing_attrs = self.class.success_attributes
+    missing_attrs = self.class
+                        .success_attributes
                         .reject { |success_attr| success_attributes.key?(success_attr) }
     raise "Missing success attrs: #{missing_attrs.join(", ")}" if missing_attrs.any?
 
