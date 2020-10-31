@@ -36,24 +36,88 @@ module Interaktor
     end
 
     describe "#call" do
-      it "calls each interaktor in order with the context" do
-        instance = organizer.new
-        context = instance_double(Interaktor::Context)
-        interaktor2 = class_double(Class.new.include(Interaktor))
-        interaktor3 = class_double(Class.new.include(Interaktor))
-        interaktor4 = class_double(Class.new.include(Interaktor))
+      it "calls each interaktor in order" do
+        organizer.class_eval { required :foo }
 
-        allow(instance).to receive(:context).and_return(context)
-        instance.instance_variable_set(:@context, context)
+        interaktor2 = Class.new.include(Interaktor)
+        interaktor2.class_eval { required :foo }
+        interaktor2.define_method(:call) { self.foo = "bar" }
+
+        interaktor3 = Class.new.include(Interaktor)
+        interaktor3.class_eval { required :foo }
+        interaktor3.define_method(:call) { self.foo = "baz" }
+
+        interaktor4 = Class.new.include(Interaktor)
+        interaktor4.class_eval { required :foo }
+        interaktor4.define_method(:call) { self.foo = "wadus" }
+
         allow(organizer).to receive(:organized) {
           [interaktor2, interaktor3, interaktor4]
         }
 
-        expect(interaktor2).to receive(:call!).once.with(context).ordered
-        expect(interaktor3).to receive(:call!).once.with(context).ordered
-        expect(interaktor4).to receive(:call!).once.with(context).ordered
+        expect(interaktor2).to receive(:call!).once.ordered.and_call_original
+        expect(interaktor3).to receive(:call!).once.ordered.and_call_original
+        expect(interaktor4).to receive(:call!).once.ordered.and_call_original
 
-        instance.call
+        result = organizer.call(foo: "asdf")
+
+        expect(result.foo).to eq "wadus"
+      end
+
+      it "calls each interaktor in order and passes success attributes" do
+        organizer.class_eval { required :foo }
+
+        interaktor2 = Class.new.include(Interaktor)
+        interaktor2.class_eval do
+          required :foo
+          success :bar
+        end
+        interaktor2.define_method(:call) { success!(bar: "baz") }
+
+        interaktor3 = Class.new.include(Interaktor)
+        interaktor3.class_eval { required :bar }
+        interaktor3.define_method(:call) { self.bar = "wadus" }
+
+        allow(organizer).to receive(:organized) {
+          [interaktor2, interaktor3]
+        }
+
+        expect(interaktor2).to receive(:call!).once.ordered.and_call_original
+        expect(interaktor3).to receive(:call!).once.ordered.and_call_original
+
+        result = organizer.call(foo: "asdf")
+
+        expect(result.bar).to eq "wadus"
+      end
+
+      it "raises an exception if the organizer attributes do not satisfy the first interaktor" do
+        organizer.class_eval { required :foo }
+
+        interaktor2 = Class.new.include(Interaktor)
+        interaktor2.class_eval { required :bar }
+
+        allow(organizer).to receive(:organized).and_return([interaktor2])
+
+        expect(interaktor2).to receive(:call!).once.ordered.and_call_original
+
+        expect { organizer.call(foo: "bar") }.to raise_error(RuntimeError, /not provided.+bar/m)
+      end
+
+      it "raises an exception if the organizer attributes do not satisfy a non-first interaktor" do
+        organizer.class_eval { required :foo }
+
+        interaktor2 = Class.new.include(Interaktor)
+        interaktor2.class_eval { required :foo }
+
+        interaktor3 = Class.new.include(Interaktor)
+        interaktor3.class_eval { required :bar }
+
+        allow(organizer).to receive(:organized).and_return([interaktor2, interaktor3])
+
+        expect(interaktor2).to receive(:call!).once.ordered.and_call_original
+        expect(interaktor3).to receive(:call!).once.ordered.and_call_original
+
+        expect { organizer.call(foo: "bar") }.to raise_error(RuntimeError, /not provided.+bar/m)
       end
     end
   end
