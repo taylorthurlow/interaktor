@@ -72,7 +72,7 @@ module Interaktor::Callable
           @context.send("#{attribute}=".to_sym, value)
         end
 
-        raise "Unknown option(s): #{options.keys.join(", ")}" if options.any?
+        raise Interaktor::Error::UnknownOptionError.new(self.class.to_s, options) if options.any?
       end
     end
 
@@ -92,11 +92,7 @@ module Interaktor::Callable
         # Define setter
         define_method("#{attribute}=".to_sym) do |value|
           unless @context.to_h.key?(attribute)
-            raise <<~ERROR
-                    You can't assign a value to an optional parameter if you
-                    didn't initialize the interaktor with it in the first
-                    place.
-                  ERROR
+            raise Interaktor::Error::DisallowedAttributeAssignmentError.new(self.class.to_s, [attribute])
           end
 
           @context.send("#{attribute}=".to_sym, value)
@@ -106,7 +102,7 @@ module Interaktor::Callable
         optional_defaults[attribute] = options[:default] if options[:default]
         options.delete(:default)
 
-        raise "Unknown option(s): #{options.keys.join(", ")}" if options.any?
+        raise Interaktor::Error::UnknownOptionError.new(self.class.to_s, options) if options.any?
       end
     end
 
@@ -121,7 +117,7 @@ module Interaktor::Callable
 
       attributes.each do |attribute|
         # Handle options
-        raise "Unknown option(s): #{options.keys.join(", ")}" if options.any?
+        raise Interaktor::Error::UnknownOptionError.new(self.class.to_s, options) if options.any?
       end
     end
 
@@ -136,7 +132,7 @@ module Interaktor::Callable
 
       attributes.each do |attribute|
         # Handle options
-        raise "Unknown option(s): #{options.keys.join(", ")}" if options.any?
+        raise Interaktor::Error::UnknownOptionError.new(self.class.to_s, options) if options.any?
       end
     end
 
@@ -184,19 +180,11 @@ module Interaktor::Callable
     def verify_attribute_presence(context)
       # TODO: Add "allow_nil?" option to required attributes
       missing_attrs = required_attributes.reject { |required_attr| context.to_h.key?(required_attr) }
-
-      raise <<~ERROR if missing_attrs.any?
-        Required attribute(s) were not provided when initializing #{self} interaktor:
-          #{missing_attrs.join("\n  ")}
-      ERROR
+      raise Interaktor::Error::MissingAttributeError.new(self, missing_attrs) if missing_attrs.any?
 
       allowed_attrs = required_attributes + optional_attributes
       extra_attrs = context.to_h.keys.reject { |attr| allowed_attrs.include?(attr) }
-
-      raise <<~ERROR if extra_attrs.any?
-        One or more provided attributes were not recognized when initializing #{self} interaktor:
-          #{extra_attrs.join("\n  ")}
-      ERROR
+      raise Interaktor::Error::UnknownAttributeError.new(self, extra_attrs) if extra_attrs.any?
     end
 
     # Given the list of optional default attribute values defined by the class,

@@ -100,7 +100,9 @@ module Interaktor
 
         expect(interaktor2).to receive(:call!).once.ordered.and_call_original
 
-        expect { organizer.call(foo: "bar") }.to raise_error(RuntimeError, /not provided.+bar/m)
+        expect {
+          organizer.call(foo: "bar")
+        }.to raise_error(an_instance_of(Interaktor::Error::MissingAttributeError).and having_attributes(attributes: [:bar]))
       end
 
       it "raises an exception if the organizer attributes do not satisfy a non-first interaktor" do
@@ -117,7 +119,9 @@ module Interaktor
         expect(interaktor2).to receive(:call!).once.ordered.and_call_original
         expect(interaktor3).to receive(:call!).once.ordered.and_call_original
 
-        expect { organizer.call(foo: "bar") }.to raise_error(RuntimeError, /not provided.+bar/m)
+        expect {
+          organizer.call(foo: "bar")
+        }.to raise_error(an_instance_of(Interaktor::Error::MissingAttributeError).and having_attributes(attributes: [:bar]))
       end
     end
   end

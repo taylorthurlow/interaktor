@@ -36,7 +36,7 @@ module Interaktor
     missing_attrs = self.class
                         .failure_attributes
                         .reject { |failure_attr| failure_attributes.key?(failure_attr) }
-    raise "Missing failure attrs: #{missing_attrs.join(", ")}" if missing_attrs.any?
+    raise Interaktor::Error::MissingAttributeError.new(self.class.to_s, missing_attrs) if missing_attrs.any?
 
     @context.fail!(failure_attributes)
   end
@@ -52,12 +52,12 @@ module Interaktor
     missing_attrs = self.class
                         .success_attributes
                         .reject { |success_attr| success_attributes.key?(success_attr) }
-    raise "Missing success attrs: #{missing_attrs.join(", ")}" if missing_attrs.any?
+    raise Interaktor::Error::MissingAttributeError.new(self.class.to_s, missing_attrs) if missing_attrs.any?
 
     # Make sure we haven't provided any unknown attributes
     unknown_attrs = success_attributes.keys
                                       .reject { |success_attr| self.class.success_attributes.include?(success_attr) }
-    raise "Unknown success attrs: #{unknown_attrs.join(", ")}" if unknown_attrs.any?
+    raise Interaktor::Error::UnknownAttributeError.new(self.class.to_s, unknown_attrs) if unknown_attrs.any?
 
     @context.success!(success_attributes)
   end

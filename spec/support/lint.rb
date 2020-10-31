@@ -20,7 +20,9 @@ shared_examples "lint" do
     end
 
     it "fails when an unknown attribute is provided" do
-      expect { interaktor.call(baz: "wadus") }.to raise_error(RuntimeError, /not recognized/)
+      expect {
+        interaktor.call(baz: "wadus")
+      }.to raise_error(an_instance_of(Interaktor::Error::UnknownAttributeError).and having_attributes(attributes: [:baz]))
     end
   end
 
@@ -36,7 +38,9 @@ shared_examples "lint" do
     end
 
     it "fails when an unknown attribute is provided" do
-      expect { interaktor.call!(baz: "wadus") }.to raise_error(RuntimeError, /not recognized/)
+      expect {
+        interaktor.call!(baz: "wadus")
+      }.to raise_error(an_instance_of(Interaktor::Error::UnknownAttributeError).and having_attributes(attributes: [:baz]))
     end
   end
 
@@ -144,14 +148,16 @@ shared_examples "lint" do
     it "raises an exception when the attribute is not provided" do
       interaktor.class_eval { required :bar }
 
-      expect { interaktor.call }.to raise_error(RuntimeError, /not provided/)
+      expect {
+        interaktor.call!
+      }.to raise_error(an_instance_of(Interaktor::Error::MissingAttributeError).and having_attributes(attributes: [:bar]))
     end
 
     describe "options" do
       it "raises an exception when an unknown option is provided" do
         expect {
           interaktor.class_eval { required :bar, unknown: true }
-        }.to raise_error(RuntimeError, /Unknown option/)
+        }.to raise_error(an_instance_of(Interaktor::Error::UnknownOptionError).and having_attributes(options: { unknown: true }))
       end
     end
   end
@@ -205,7 +211,12 @@ shared_examples "lint" do
         self.bar = "baz"
       end
 
-      expect { interaktor.call }.to raise_exception(RuntimeError, /can't assign a value/)
+      expect { interaktor.call }.to(
+        raise_error(
+          an_instance_of(Interaktor::Error::DisallowedAttributeAssignmentError)
+            .and(having_attributes(attributes: [:bar]))
+        )
+      )
     end
 
     describe "options" do
@@ -223,7 +234,7 @@ shared_examples "lint" do
       it "raises an exception when an unknown option is provided" do
         expect {
           interaktor.class_eval { optional :bar, unknown: true }
-        }.to raise_error(RuntimeError, /Unknown option/)
+        }.to raise_error(an_instance_of(Interaktor::Error::UnknownOptionError).and having_attributes(options: { unknown: true }))
       end
     end
   end
@@ -253,7 +264,11 @@ shared_examples "lint" do
         success!({})
       end
 
-      expect { interaktor.call }.to raise_error(RuntimeError, /Missing success attrs/)
+      expect { interaktor.call }.to(
+        raise_error(
+          an_instance_of(Interaktor::Error::MissingAttributeError).and having_attributes(attributes: [:bar])
+        )
+      )
     end
 
     it "raises an exception when unknown attributes are provided" do
@@ -265,14 +280,18 @@ shared_examples "lint" do
         success!(bar: "baz", baz: "wadus")
       end
 
-      expect { interaktor.call }.to raise_error(RuntimeError, /Unknown success attrs/)
+      expect { interaktor.call }.to(
+        raise_error(
+          an_instance_of(Interaktor::Error::UnknownAttributeError).and having_attributes(attributes: [:baz])
+        )
+      )
     end
 
     describe "options" do
       it "raises an exception when an unknown option is provided" do
         expect {
           interaktor.class_eval { success :bar, unknown: true }
-        }.to raise_error(RuntimeError, /Unknown option/)
+        }.to raise_error(an_instance_of(Interaktor::Error::UnknownOptionError).and having_attributes(options: { unknown: true }))
       end
     end
   end
@@ -302,7 +321,11 @@ shared_examples "lint" do
         fail!({})
       end
 
-      expect { interaktor.call }.to raise_error(RuntimeError, /Missing failure attrs/)
+      expect { interaktor.call }.to(
+        raise_error(
+          an_instance_of(Interaktor::Error::MissingAttributeError).and having_attributes(attributes: [:bar])
+        )
+      )
     end
 
     context "when the interaktor is called with #call!" do
@@ -327,7 +350,11 @@ shared_examples "lint" do
           fail!({})
         end
 
-        expect { interaktor.call }.to raise_error(RuntimeError, /Missing failure attrs/)
+        expect { interaktor.call }.to(
+          raise_error(
+            an_instance_of(Interaktor::Error::MissingAttributeError).and having_attributes(attributes: [:bar])
+          )
+        )
       end
     end
 
@@ -335,7 +362,7 @@ shared_examples "lint" do
       it "raises an exception when an unknown option is provided" do
         expect {
           interaktor.class_eval { failure :bar, unknown: true }
-        }.to raise_error(RuntimeError, /Unknown option/)
+        }.to raise_error(an_instance_of(Interaktor::Error::UnknownOptionError).and having_attributes(options: { unknown: true }))
       end
     end
   end
