@@ -40,28 +40,15 @@ module Interaktor::Organizer
     # @return [void]
     def call
       self.class.organized.each do |interaktor|
+        # Take the context that is being passed to each interaktor and remove
+        # any attributes from it that are not required by the interactor.
+        @context.to_h
+                .keys
+                .reject { |attr| interaktor.input_attributes.include?(attr) }
+                .each { |attr| @context.delete_field(attr) }
+
         catch(:early_return) { interaktor.call!(@context) }
       end
-    end
-
-    private
-
-    # A list of attributes required to invoke the organized Interaktors.
-    # Obtained by compiling a list of all required attributes of all organized
-    # interaktors. Duplicates are removed.
-    #
-    # @return [Array<Symbol>]
-    def required_attributes
-      self.class.organized.map(&:required_attributes).flatten.uniq
-    end
-
-    # A list of optional attributes allowed to be included when invoking the
-    # organized Interaktors. Obtained by compiling a list of all optional
-    # attributes of all organized interaktors. Duplicates are removed.
-    #
-    # @return [Array<Symbol>]
-    def optional_attributes
-      self.class.organized.map(&:optional_attributes).flatten.uniq
     end
   end
 end
