@@ -5,30 +5,33 @@
 
 describe "Integration" do
   def build_interaktor(&block)
-    interaktor = Class.new.send(:include, Interaktor)
-    interaktor.class_eval(&block) if block
-    interaktor.class_eval do
-      optional :steps
+    Class.new.tap do |interaktor|
+      interaktor.send(:include, Interaktor)
+      interaktor.class_eval(&block) if block
+      interaktor.class_eval do
+        optional :steps
 
-      def unexpected_error!
-        raise "foo"
+        def unexpected_error!
+          raise "foo"
+        end
       end
     end
-    interaktor
   end
 
   def build_organizer(options = {}, &block)
-    organizer = Class.new.send(:include, Interaktor::Organizer)
-    organizer.organize(options[:organize]) if options[:organize]
-    organizer.class_eval(&block) if block
-    organizer.class_eval do
-      optional :steps
+    Class.new.tap do |organizer|
+      organizer.send(:include, Interaktor::Organizer)
 
-      def unexpected_error!
-        raise "foo"
+      organizer.organize(options[:organize]) if options[:organize]
+      organizer.class_eval(&block) if block
+      organizer.class_eval do
+        optional :steps
+
+        def unexpected_error!
+          raise "foo"
+        end
       end
     end
-    organizer
   end
 
   # rubocop:disable Style/AsciiComments

@@ -1,12 +1,5 @@
 shared_examples "lint" do
-  let(:interaktor) do
-    klass = Class.new.include(described_class)
-    klass.class_eval do
-      optional :foo
-    end
-
-    klass
-  end
+  let(:interaktor) { Class.new.include(described_class) }
 
   describe ".call" do
     let(:instance) { instance_double(interaktor) }
