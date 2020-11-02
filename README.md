@@ -5,7 +5,7 @@
 
 **DISCLAIMER: Interaktor is under active development. Feel free to use it, but until 1.0 is released, any update could break compatibility with an older version.**
 
-**Interaktor** is a fork of [Interaktor by collectiveidea](https://github.com/collectiveidea/interaktor). While Interactor is still used by collectiveidea internally, communication and progress has been slow in adapting to pull requests and issues. This inactivity combined with my desire to dial back on the Interactor's inherent permissivity led me to fork it and create Interaktor.
+**Interaktor** is a fork of [Interactor by collectiveidea](https://github.com/collectiveidea/interaktor). While Interactor is still used by collectiveidea internally, communication and progress has been slow in adapting to pull requests and issues. This inactivity combined with my desire to dial back on the Interactor's inherent permissivity led me to fork it and create Interaktor.
 
 Fundamentally, Interaktor is the same as Interactor, but with the following changes:
 
@@ -515,4 +515,4 @@ This controller test will have to change very little during the life of the appl
 
 ### Rails
 
-Interactor provided [interactor-rails](https://github.com/collectiveidea/interactor-rails), which ensures `app/interactors` is included in your autoload paths, and provides generators for new interactors. I have no intention of maintaining generators but if someone feels strongly enough to submit a pull request to include the functionality in _this_ gem (not a separate Rails one) then I will be happy to take a look. Making sure `app/interactors` is included in your autoload paths is something I would like to do soon.
+Interactor provided [interactor-rails](https://github.com/collectiveidea/interactor-rails), which ensures `app/interactors` is included in your autoload paths, and provides generators for new interactors. I have no intention of maintaining generators but if someone feels strongly enough to submit a pull request to include the functionality in _this_ gem (not a separate Rails one) then I will be happy to take a look. Making sure `app/interaktors` is included in your autoload paths is something I would like to do soon.
