@@ -10,7 +10,7 @@ gem "solargraph"
 gem "guard-rspec", require: false
 
 group :test do
-  gem "pry-byebug"
+  gem "pry-byebug", platforms: [:mri]
   gem "rspec", "~> 3.9.0"
   gem "simplecov"
 end
