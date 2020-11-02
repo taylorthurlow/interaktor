@@ -137,34 +137,43 @@ module Interaktor::Callable
     end
 
     # Invoke an Interaktor. This is the primary public API method to an
-    # interaktor.
+    # interaktor. Interaktor failures will not raise an exception.
     #
     # @param context [Hash, Interaktor::Context] the context object as a hash
-    # with attributes or an already-built context
+    #   with attributes or an already-built context
     #
     # @return [Interaktor::Context] the context, following interaktor execution
     def call(context = {})
-      unless context.is_a?(Hash) || context.is_a?(Interaktor::Context)
-        raise ArgumentError, "Expected a hash argument when calling the interaktor, got a #{context.class} instead."
-      end
-
-      apply_default_optional_attributes(context)
-      verify_attribute_presence(context)
-
-      new(context).tap(&:run).instance_variable_get(:@context)
+      execute(context, false)
     end
 
-    # Invoke an Interaktor. This method behaves identically to `#call`, with
-    # one notable exception - if the context is failed during the invocation of
-    # the interaktor, `Interaktor::Failure` is raised.
+    # Invoke an Interaktor. This method behaves identically to `#call`, but if
+    # the interaktor is failed, `Interaktor::Failure` is raised.
     #
     # @param context [Hash, Interaktor::Context] the context object as a hash
-    # with attributes or an already-built context
+    #   with attributes or an already-built context
     #
     # @raises [Interaktor::Failure]
     #
     # @return [Interaktor::Context] the context, following interaktor execution
     def call!(context = {})
+      execute(context, true)
+    end
+
+    private
+
+    # The main execution method triggered by the public `#call` or `#call!`
+    # methods.
+    #
+    # @param context [Hash, Interaktor::Context] the context object as a hash
+    #   with attributes or an already-built context
+    # @param raise_exception [Boolean] whether or not to raise exception on
+    #   failure
+    #
+    # @raises [Interaktor::Failure]
+    #
+    # @return [Interaktor::Context] the context, following interaktor execution
+    def execute(context, raise_exception)
       unless context.is_a?(Hash) || context.is_a?(Interaktor::Context)
         raise ArgumentError, "Expected a hash argument when calling the interaktor, got a #{context.class} instead."
       end
@@ -172,10 +181,10 @@ module Interaktor::Callable
       apply_default_optional_attributes(context)
       verify_attribute_presence(context)
 
-      new(context).tap(&:run!).instance_variable_get(:@context)
-    end
+      run_method = raise_exception ? :run! : :run
 
-    private
+      new(context).tap(&run_method).instance_variable_get(:@context)
+    end
 
     # Check the provided context against the attributes defined with the DSL
     # methods, and determine if there are any attributes which are required and
