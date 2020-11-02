@@ -248,7 +248,19 @@ shared_examples "lint" do
       expect(result.bar).to eq "baz"
     end
 
-    it "raises an exception when the correct attributes are not provided" do
+    it "raises an exception when the correct attributes are not provided because #success! is not called" do
+      interaktor.class_eval { success :bar }
+
+      expect(interaktor).to receive(:new).once.with({}).and_call_original
+
+      expect { interaktor.call }.to(
+        raise_error(
+          an_instance_of(Interaktor::Error::MissingAttributeError).and having_attributes(attributes: [:bar])
+        )
+      )
+    end
+
+    it "raises an exception when the correct attributes are not provided in the call to #success!" do
       interaktor.class_eval { success :bar }
 
       expect(interaktor).to receive(:new).once.with({}).and_call_original

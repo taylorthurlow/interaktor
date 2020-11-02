@@ -104,6 +104,10 @@ module Interaktor
         call
       end
 
+      if !@context.early_return? && self.class.success_attributes.any?
+        raise Interaktor::Error::MissingAttributeError.new(self, self.class.success_attributes)
+      end
+
       @context.called!(self)
     end
   rescue StandardError

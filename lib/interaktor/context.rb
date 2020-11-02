@@ -62,7 +62,7 @@ class Interaktor::Context < OpenStruct
   # @return [void]
   def success!(context = {})
     context.each { |key, value| self[key.to_sym] = value }
-    throw :early_return, self
+    early_return!
   end
 
   # Roll back the Interaktor::Context. Any interaktors to which this context
@@ -97,5 +97,20 @@ class Interaktor::Context < OpenStruct
   # @return [Array<Interaktor>]
   def _called
     @called ||= []
+  end
+
+  # Trigger an early return throw.
+  #
+  # @return [void]
+  def early_return!
+    @early_return = true
+    throw :early_return, self
+  end
+
+  # Whether or not the context has been returned from early.
+  #
+  # @return [Boolean]
+  def early_return?
+    (@early_return == true) || false
   end
 end
