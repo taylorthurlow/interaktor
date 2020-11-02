@@ -7,19 +7,19 @@
 
 **Interaktor** is a fork of [Interaktor by collectiveidea](https://github.com/collectiveidea/interaktor). While Interactor is still used by collectiveidea internally, communication and progress has been slow in adapting to pull requests and issues. This inactivity combined with my desire to dial back on the Interactor's inherent permissivity led me to fork it and create Interaktor.
 
-Fundamentally, Interaktor is the same as Interactor, but with a small DSL which is used to define attributes passed into the interaktor, such as:
+Fundamentally, Interaktor is the same as Interactor, but with the following changes:
 
-- Required attributes
-- Optional attributes
-- Attributes required on interaktor failure
-- Attributes required on interaktor success
+- Required explicit definition of interaktor "attributes" which replaces the concept of the interaktor context. Attributes can be required or optional, and support options like default values.
+- The interaktor "context" is no longer a public-facing concept, all data/attribute accessors/setters are defined as attributes
+- Attributes passed to `#fail!` must be defined in advance
+- Interaktors support early-exit functionality through the use of `#success!`, which functions the same as `#fail!` in that you must define the required success attributes on the interaktor
 
 ## Getting started
 
 Add `interaktor` to your Gemfile and `bundle install`.
 
 ```ruby
-gem "interaktor", "~> 0.1"
+gem "interaktor"
 ```
 
 ## What is an interaktor?
@@ -92,13 +92,11 @@ else
 end
 ```
 
-#### Dealing with sailure
+#### Dealing with failure
 
-`context.fail!` always throws an exception of type `Interaktor::Failure`.
+`#fail!` always throws an exception of type `Interaktor::Failure`.
 
-Normally, however, these exceptions are not seen. In the recommended usage, the controller invokes the interaktor using the class method `.call`, then checks the `#success?` method of the context.
-
-This works because the `call` class method swallows exceptions. When unit testing an interaktor, if calling custom business logic methods directly and bypassing `call`, be aware that `fail!` will generate such exceptions.
+Normally, however, these exceptions are not seen. In the recommended usage, the caller invokes the interaktor using the class method `.call`, then checks the `#success?` method of the returned object. This works because the `call` class method swallows exceptions. When unit testing an interaktor, if calling custom business logic methods directly and bypassing `call`, be aware that `fail!` will generate such exceptions.
 
 See _Interaktors in the controller_, below, for the recommended usage of `call` and `success?`.
 
@@ -106,7 +104,7 @@ See _Interaktors in the controller_, below, for the recommended usage of `call` 
 
 #### Before hooks
 
-Sometimes an interaktor needs to prepare its context before the interaktor is even run. This can be done with before hooks on the interaktor.
+Sometimes an interaktor needs to prepare something before the interaktor is even run. This can be done with before hooks on the interaktor.
 
 ```ruby
 before do
@@ -126,12 +124,11 @@ end
 
 #### After hooks
 
-Interaktors can also perform teardown operations after the interaktor instance
-is run. They are only run on success.
+Interaktors can also perform teardown operations after the interaktor instance is run. They are only run on success.
 
 ```ruby
 after do
-  context.user.reload
+  user.reload
 end
 ```
 
@@ -163,9 +160,7 @@ If `#fail!` is called, any code defined in the hook after the call to the intera
 
 #### Hook sequence
 
-Before hooks are invoked in the order in which they were defined while after
-hooks are invoked in the opposite order. Around hooks are invoked outside of any
-defined before and after hooks. For example:
+Before hooks are invoked in the order in which they were defined while after hooks are invoked in the opposite order. Around hooks are invoked outside of any defined before and after hooks. For example:
 
 ```ruby
 around do |interaktor|
@@ -212,8 +207,7 @@ around after 1
 
 #### Interaktor concerns
 
-An interaktor can define multiple before/after hooks, allowing common hooks to
-be extracted into interaktor concerns.
+An interaktor can define multiple before/after hooks, allowing common hooks to be extracted into interaktor concerns.
 
 ```ruby
 module InteraktorDoStuff
@@ -229,12 +223,9 @@ module InteraktorDoStuff
 end
 ```
 
-# All documentation below this line has not been updated to reflect the fork from Interactor.
-
 ## Kinds of interaktors
 
-There are two kinds of interaktors built into the Interaktor library: basic
-interaktors and organizers.
+There are two kinds of interaktors built into the Interaktor library: basic interaktors and organizers.
 
 ### Interaktors
 
@@ -244,35 +235,41 @@ A basic interaktor is a class that includes `Interaktor` and defines `call`.
 class AuthenticateUser
   include Interaktor
 
+  required :email
+  required :password
+
+  success :user
+  success :token
+
+  failure :message
+
   def call
-    if user = User.authenticate(context.email, context.password)
-      context.user = user
-      context.token = user.secret_token
+    if user = User.authenticate(email, password)
+      success!(user: user, token: user.secret_token)
     else
-      context.fail!(message: "authenticate_user.failure")
+      fail!(message: "authenticate_user.failure")
     end
   end
 end
 ```
 
-Basic interaktors are the building blocks. They are your application's
-single-purpose units of work.
+Basic interaktors are the building blocks. They are your application's single-purpose units of work.
 
 ### Organizers
 
-An organizer is an important variation on the basic interaktor. Its single
-purpose is to run _other_ interaktors.
+An organizer is an important variation on the basic interaktor. Its single purpose is to run _other_ interaktors.
 
 ```ruby
 class PlaceOrder
   include Interaktor::Organizer
 
+  required :order_params
+
   organize CreateOrder, ChargeCard, SendThankYou
 end
 ```
 
-In the controller, you can run the `PlaceOrder` organizer just like you would
-any other interaktor:
+In the controller, you can run the `PlaceOrder` organizer just like you would any other interaktor:
 
 ```ruby
 class OrdersController < ApplicationController
@@ -295,69 +292,71 @@ class OrdersController < ApplicationController
 end
 ```
 
-The organizer passes its context to the interaktors that it organizes, one at a
-time and in order. Each interaktor may change that context before it's passed
-along to the next interaktor.
+The organizer passes any of its own defined attributes into first interaktor that it organizes. That first interaktor is then called and executed using those attributes. For the following interaktors in the organize list, each interaktor receives its attributes from the previous interaktor (both input attributes and success attributes). Any attributes which are _not_ accepted by the next interaktor (listed as required or optional attributes) are dropped in the transition.
 
 #### Rollback
 
-If any one of the organized interaktors fails its context, the organizer stops.
-If the `ChargeCard` interaktor fails, `SendThankYou` is never called.
+If any one of the organized interaktors fails, the organizer stops. If the `ChargeCard` interaktor fails, `SendThankYou` is never called.
 
-In addition, any interaktors that had already run are given the chance to undo
-themselves, in reverse order. Simply define the `rollback` method on your
-interaktors:
+In addition, any interaktors that had already run are given the chance to undo themselves, in reverse order. Simply define the `rollback` method on your interaktors.
 
 ```ruby
 class CreateOrder
   include Interaktor
 
+  required :order_params
+
+  success :order
+
   def call
     order = Order.create(order_params)
 
     if order.persisted?
-      context.order = order
+      success!(order: order)
     else
-      context.fail!
+      fail!
     end
   end
 
   def rollback
-    context.order.destroy
+    order.destroy
   end
 end
 ```
 
-**NOTE:** The interaktor that fails is _not_ rolled back. Because every
-interaktor should have a single purpose, there should be no need to clean up
-after any failed interaktor.
+**NOTE:** The interaktor that fails is _not_ rolled back. Because every interaktor should have a single purpose, there should be no need to clean up after any failed interaktor. This is why the rollback method above can access the `order` success attribute - rollback is only called on successful interaktors.
 
 ## Testing interaktors
 
-When written correctly, an interaktor is easy to test because it only _does_ one
-thing. Take the following interaktor:
+When written correctly, an interaktor is easy to test because it only _does_ one thing. Take the following interaktor:
 
 ```ruby
 class AuthenticateUser
   include Interaktor
 
+  required :email
+  required :password
+
+  success :user
+  success :token
+
+  failure :message
+
   def call
-    if user = User.authenticate(context.email, context.password)
-      context.user = user
-      context.token = user.secret_token
+    if user = User.authenticate(email, password)
+      success!(user: user, token: user.secret_token)
     else
-      context.fail!(message: "authenticate_user.failure")
+      fail!(message: "authenticate_user.failure")
     end
   end
 end
 ```
 
-You can test just this interaktor's single purpose and how it affects the
-context.
+You can test just this interaktor's single purpose and how it affects the result.
 
 ```ruby
 describe AuthenticateUser do
-  subject(:context) { AuthenticateUser.call(email: "john@example.com", password: "secret") }
+  subject(:result) { AuthenticateUser.call(email: "john@example.com", password: "secret") }
 
   describe ".call" do
     context "when given valid credentials" do
@@ -368,15 +367,15 @@ describe AuthenticateUser do
       end
 
       it "succeeds" do
-        expect(context).to be_a_success
+        expect(result).to be_a_success
       end
 
       it "provides the user" do
-        expect(context.user).to eq(user)
+        expect(result.user).to eq(user)
       end
 
       it "provides the user's secret token" do
-        expect(context.token).to eq("token")
+        expect(result.token).to eq("token")
       end
     end
 
@@ -386,80 +385,62 @@ describe AuthenticateUser do
       end
 
       it "fails" do
-        expect(context).to be_a_failure
+        expect(result).to be_a_failure
       end
 
       it "provides a failure message" do
-        expect(context.message).to be_present
+        expect(result.message).to be_present
       end
     end
   end
 end
 ```
 
-[We](http://collectiveidea.com) use RSpec but the same approach applies to any
-testing framework.
-
 ### Isolation
 
-You may notice that we stub `User.authenticate` in our test rather than creating
-users in the database. That's because our purpose in
-`spec/interaktors/authenticate_user_spec.rb` is to test just the
-`AuthenticateUser` interaktor. The `User.authenticate` method is put through its
-own paces in `spec/models/user_spec.rb`.
+You may notice that we stub `User.authenticate` in our test rather than creating users in the database. That's because our purpose in `spec/interaktors/authenticate_user_spec.rb` is to test just the `AuthenticateUser` interaktor. The `User.authenticate` method is put through its own paces in `spec/models/user_spec.rb`.
 
-It's a good idea to define your own interfaces to your models. Doing so makes it
-easy to draw a line between which responsibilities belong to the interaktor and
-which to the model. The `User.authenticate` method is a good, clear line.
-Imagine the interaktor otherwise:
+It's a good idea to define your own interfaces to your models. Doing so makes it easy to draw a line between which responsibilities belong to the interaktor and which to the model. The `User.authenticate` method is a good, clear line. Imagine the interaktor otherwise:
 
 ```ruby
 class AuthenticateUser
   include Interaktor
 
+  required :email
+  required :password
+
+  success :user
+
+  failure :message
+
   def call
-    user = User.where(email: context.email).first
+    user = User.find_by(email: email)
 
     # Yuck!
-    if user && BCrypt::Password.new(user.password_digest) == context.password
-      context.user = user
+    if user && BCrypt::Password.new(user.password_digest) == password
+      success!(user: user)
     else
-      context.fail!(message: "authenticate_user.failure")
+      fail!(message: "authenticate_user.failure")
     end
   end
 end
 ```
 
-It would be very difficult to test this interaktor in isolation and even if you
-did, as soon as you change your ORM or your encryption algorithm (both model
-concerns), your interaktors (business concerns) break.
+It would be very difficult to test this interaktor in isolation and even if you did, as soon as you change your ORM or your encryption algorithm (both model concerns), your interaktors (business concerns) break.
 
 _Draw clear lines._
 
 ### Integration
 
-While it's important to test your interaktors in isolation, it's just as
-important to write good integration or acceptance tests.
+While it's important to test your interaktors in isolation, it's just as important to write good integration or acceptance tests.
 
-One of the pitfalls of testing in isolation is that when you stub a method, you
-could be hiding the fact that the method is broken, has changed or doesn't even
-exist.
+One of the pitfalls of testing in isolation is that when you stub a method, you could be hiding the fact that the method is broken, has changed or doesn't even exist.
 
-When you write full-stack tests that tie all of the pieces together, you can be
-sure that your application's individual pieces are working together as expected.
-That becomes even more important when you add a new layer to your code like
-interaktors.
-
-**TIP:** If you track your test coverage, try for 100% coverage _before_
-integrations tests. Then keep writing integration tests until you sleep well at
-night.
+When you write full-stack tests that tie all of the pieces together, you can be sure that your application's individual pieces are working together as expected. That becomes even more important when you add a new layer to your code like interaktors.
 
 ### Controllers
 
-One of the advantages of using interaktors is how much they simplify controllers
-and their tests. Because you're testing your interaktors thoroughly in isolation
-as well as in integration tests (right?), you can remove your business logic
-from your controller tests.
+One of the advantages of using interaktors is how much they simplify controllers and their tests. Because you're testing your interaktors thoroughly in isolation as well as in integration tests (right?), you can remove your business logic from your controller tests.
 
 ```ruby
 class SessionsController < ApplicationController
@@ -487,12 +468,12 @@ end
 describe SessionsController do
   describe "#create" do
     before do
-      expect(AuthenticateUser).to receive(:call).once.with(email: "john@doe.com", password: "secret").and_return(context)
+      expect(AuthenticateUser).to receive(:call).once.with(email: "john@doe.com", password: "secret").and_return(result)
     end
 
     context "when successful" do
       let(:user) { double(:user, id: 1) }
-      let(:context) { double(:context, success?: true, user: user, token: "token") }
+      let(:result) { double(:result, success?: true, user: user, token: "token") }
 
       it "saves the user's secret token in the session" do
         expect {
@@ -510,7 +491,7 @@ describe SessionsController do
     end
 
     context "when unsuccessful" do
-      let(:context) { double(:context, success?: false, message: "message") }
+      let(:result) { double(:result, success?: false, message: "message") }
 
       it "sets a flash message" do
         expect {
@@ -530,36 +511,8 @@ describe SessionsController do
 end
 ```
 
-This controller test will have to change very little during the life of the
-application because all of the magic happens in the interaktor.
+This controller test will have to change very little during the life of the application because all of the magic happens in the interaktor.
 
 ### Rails
 
-[We](http://collectiveidea.com) love Rails, and we use Interaktor with Rails. We
-put our interaktors in `app/interaktors` and we name them as verbs:
-
-- `AddProductToCart`
-- `AuthenticateUser`
-- `PlaceOrder`
-- `RegisterUser`
-- `RemoveProductFromCart`
-
-See: [Interaktor Rails](https://github.com/collectiveidea/interaktor-rails)
-
-## Contributions
-
-Interaktor is open source and contributions from the community are encouraged!
-No contribution is too small.
-
-See Interaktor's
-[contribution guidelines](CONTRIBUTING.md) for more information.
-
-## Thank You
-
-A very special thank you to [Attila Domokos](https://github.com/adomokos) for
-his fantastic work on [LightService](https://github.com/adomokos/light-service).
-Interaktor is inspired heavily by the concepts put to code by Attila.
-
-Interaktor was born from a desire for a slightly simplified interface. We
-understand that this is a matter of personal preference, so please take a look
-at LightService as well!
+Interactor provided [interactor-rails](https://github.com/collectiveidea/interactor-rails), which ensures `app/interactors` is included in your autoload paths, and provides generators for new interactors. I have no intention of maintaining generators but if someone feels strongly enough to submit a pull request to include the functionality in _this_ gem (not a separate Rails one) then I will be happy to take a look. Making sure `app/interactors` is included in your autoload paths is something I would like to do soon.
