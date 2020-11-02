@@ -144,6 +144,10 @@ module Interaktor::Callable
     #
     # @return [Interaktor::Context] the context, following interaktor execution
     def call(context = {})
+      unless context.is_a?(Hash) || context.is_a?(Interaktor::Context)
+        raise ArgumentError, "Expected a hash argument when calling the interaktor, got a #{context.class} instead."
+      end
+
       apply_default_optional_attributes(context)
       verify_attribute_presence(context)
 
@@ -161,6 +165,10 @@ module Interaktor::Callable
     #
     # @return [Interaktor::Context] the context, following interaktor execution
     def call!(context = {})
+      unless context.is_a?(Hash) || context.is_a?(Interaktor::Context)
+        raise ArgumentError, "Expected a hash argument when calling the interaktor, got a #{context.class} instead."
+      end
+
       apply_default_optional_attributes(context)
       verify_attribute_presence(context)
 

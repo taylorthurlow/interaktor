@@ -17,6 +17,12 @@ shared_examples "lint" do
         interaktor.call(baz: "wadus")
       }.to raise_error(an_instance_of(Interaktor::Error::UnknownAttributeError).and having_attributes(attributes: [:baz]))
     end
+
+    it "fails when a non-hash or non-context argument is passed" do
+      expect {
+        interaktor.call("foo")
+      }.to raise_error(ArgumentError, /Expected a hash argument/)
+    end
   end
 
   describe ".call!" do
@@ -34,6 +40,12 @@ shared_examples "lint" do
       expect {
         interaktor.call!(baz: "wadus")
       }.to raise_error(an_instance_of(Interaktor::Error::UnknownAttributeError).and having_attributes(attributes: [:baz]))
+    end
+
+    it "fails when a non-hash or non-context argument is passed" do
+      expect {
+        interaktor.call!("foo")
+      }.to raise_error(ArgumentError, /Expected a hash argument/)
     end
   end
 
