@@ -10,7 +10,9 @@ class Interaktor::Error::AttributeError < Interaktor::Error::Base
     @attributes = attributes
   end
 
+  # @return [String]
+  # @abstract
   def message
-    raise NotImplementedError
+    raise NoMethodError
   end
 end

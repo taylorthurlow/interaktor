@@ -10,7 +10,9 @@ class Interaktor::Error::OptionError < Interaktor::Error::Base
     @options = options
   end
 
+  # @return [String]
+  # @abstract
   def message
-    raise NotImplementedError
+    raise NoMethodError
   end
 end
