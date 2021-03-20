@@ -174,16 +174,20 @@ module Interaktor::Callable
     #
     # @return [Interaktor::Context] the context, following interaktor execution
     def execute(context, raise_exception)
-      unless context.is_a?(Hash) || context.is_a?(Interaktor::Context)
-        raise ArgumentError, "Expected a hash argument when calling the interaktor, got a #{context.class} instead."
-      end
-
-      apply_default_optional_attributes(context)
-      verify_attribute_presence(context)
-
       run_method = raise_exception ? :run! : :run
 
-      new(context).tap(&run_method).instance_variable_get(:@context)
+      case context
+      when Hash
+        apply_default_optional_attributes(context)
+        verify_attribute_presence(context)
+
+        new(context).tap(&run_method).instance_variable_get(:@context)
+      when Interaktor::Context
+        new(context).tap(&run_method).instance_variable_get(:@context)
+      else
+        raise ArgumentError,
+              "Expected a hash argument when calling the interaktor, got a #{context.class} instead."
+      end
     end
 
     # Check the provided context against the attributes defined with the DSL
