@@ -1,7 +1,7 @@
 # rubocop:disable RSpec/ScatteredSetup
 
 module Interaktor
-  describe Hooks do
+  RSpec.describe Hooks do
     describe "#with_hooks" do
       def build_hooked(&block)
         hooked = Class.new.send(:include, Interaktor::Hooks)

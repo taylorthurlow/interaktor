@@ -1,5 +1,5 @@
 module Interaktor
-  describe Organizer do
+  RSpec.describe Organizer do
     let(:organizer) { Class.new.include(described_class) }
 
     include_examples "lint"

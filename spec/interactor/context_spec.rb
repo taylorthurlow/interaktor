@@ -1,5 +1,5 @@
 module Interaktor
-  describe Context do
+  RSpec.describe Context do
     describe ".build" do
       it "converts the given hash to a context" do
         context = described_class.build(foo: "bar")

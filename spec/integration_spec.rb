@@ -3,7 +3,7 @@
 # rubocop:disable RSpec/ScatteredSetup
 # rubocop:disable Style/DocumentationMethod
 
-describe "Integration" do
+RSpec.describe "Integration" do
   def build_interaktor(&block)
     Class.new.tap do |interaktor|
       interaktor.send(:include, Interaktor)

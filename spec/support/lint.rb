@@ -1,4 +1,4 @@
-shared_examples "lint" do
+RSpec.shared_examples "lint" do
   let(:interaktor) { Class.new.include(described_class) }
 
   describe ".call" do
