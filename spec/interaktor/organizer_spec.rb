@@ -126,12 +126,79 @@ module Interaktor
         expect(result.bar).to eq "wadus"
       end
 
-      it "raises an exception if an organized interaktor does not include success attributes matching the next interaktor's input attributes" do
+      it "allows an interaktor to accept required attributes from previous success attributes" do
+        organizer = FakeInteractor.build_organizer
+        interaktor1 = FakeInteractor.build_interaktor("Interaktor1") do
+          success :foo
+
+          def call
+            success!(foo: "whatever")
+          end
+        end
+        interaktor2 = FakeInteractor.build_interaktor("Interaktor2") do
+          success :bar
+
+          def call
+            success!(bar: "whatever")
+          end
+        end
+        interaktor3 = FakeInteractor.build_interaktor("Interaktor3") { required :foo, :bar }
+
+        allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2, interaktor3])
+
+        expect(interaktor1).to receive(:call!).once.ordered.and_call_original
+        expect(interaktor2).to receive(:call!).once.ordered.and_call_original
+        expect(interaktor3).to receive(:call!).once.ordered.and_call_original
+
+        organizer.call
+      end
+
+      it "allows an interaktor to accept required attributes from the original organizer" do
+        organizer = FakeInteractor.build_organizer { required :foo, :bar }
+        interaktor1 = FakeInteractor.build_interaktor("Interaktor1")
+        interaktor2 = FakeInteractor.build_interaktor("Interaktor2") { required :foo }
+        interaktor3 = FakeInteractor.build_interaktor("Interaktor3") { required :bar }
+
+        allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2, interaktor3])
+
+        expect(interaktor1).to receive(:call!).once.ordered.and_call_original
+        expect(interaktor2).to receive(:call!).once.ordered.and_call_original
+        expect(interaktor3).to receive(:call!).once.ordered.and_call_original
+
+        organizer.call(foo: "whatever", bar: "baz")
+      end
+
+      it "allows an interaktor to accept required attributes from the original organizer AND previous success attributes" do
+        organizer = FakeInteractor.build_organizer { required :foo }
+        interaktor1 = FakeInteractor.build_interaktor("Interaktor1") do
+          success :bar
+
+          def call
+            success!(bar: "whatever")
+          end
+        end
+        interaktor2 = FakeInteractor.build_interaktor("Interaktor2") do
+          success :baz
+
+          def call
+            success!(baz: "whatever")
+          end
+        end
+        interaktor3 = FakeInteractor.build_interaktor("Interaktor3") { required :foo, :bar, :baz }
+
+        allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2, interaktor3])
+
+        expect(interaktor1).to receive(:call!).once.ordered.and_call_original
+        expect(interaktor2).to receive(:call!).once.ordered.and_call_original
+        expect(interaktor3).to receive(:call!).once.ordered.and_call_original
+
+        organizer.call(foo: "whatever")
+      end
+
+      it "raises an exception if an interaktor requires an input attribute not provided by any previous interaktor" do
         organizer = FakeInteractor.build_organizer
         interaktor1 = FakeInteractor.build_interaktor("Interaktor1")
-        interaktor2 = FakeInteractor.build_interaktor("Interaktor2") do
-          required :foo
-        end
+        interaktor2 = FakeInteractor.build_interaktor("Interaktor2") { required :foo }
 
         allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2])
 
@@ -143,8 +210,7 @@ module Interaktor
           an_instance_of(Interaktor::Error::OrganizerMissingPassedAttributeError)
             .and(having_attributes(
               attribute: :foo,
-              previous_interaktor: interaktor1,
-              next_interaktor: interaktor2,
+              interaktor: interaktor2,
             ))
         )
       end

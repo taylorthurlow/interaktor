@@ -42,13 +42,6 @@ module Interaktor::Organizer
       check_attribute_flow_valid
 
       self.class.organized.each do |interaktor|
-        # Take the context that is being passed to each interaktor and remove
-        # any attributes from it that are not required by the interactor.
-        @context.to_h
-                .keys
-                .reject { |attr| interaktor.input_attributes.include?(attr) }
-                .each { |attr| @context.delete_field(attr) }
-
         catch(:early_return) { interaktor.call!(@context) }
       end
     end
@@ -59,29 +52,25 @@ module Interaktor::Organizer
     def check_attribute_flow_valid
       interaktors = self.class.organized
 
-      # @param interaktor [Class]
-      # @param i [Integer]
-      interaktors.each_with_index do |interaktor, i|
-        if interaktor == interaktors.first
-          previous_interaktor = self.class
-          previous_interaktor_output = previous_interaktor.required_attributes
-        else
-          previous_interaktor = interaktors[i - 1]
-          previous_interaktor_output = previous_interaktor.success_attributes
-        end
+      # @type [Array<Symbol>]
+      success_attributes_so_far = []
 
+      success_attributes_so_far += self.class.required_attributes
+
+      # @param interaktor [Class]
+      interaktors.each do |interaktor|
         interaktor.required_attributes.each do |required_attr|
-          unless previous_interaktor_output.include?(required_attr)
-            # TODO: Consider allowing ANY previous interaktor success attribute to match instead of just previous
-            raise Interaktor::Error::OrganizerMissingPassedAttributeError.new(previous_interaktor, interaktor, required_attr)
+          unless success_attributes_so_far.include?(required_attr)
+            raise Interaktor::Error::OrganizerMissingPassedAttributeError.new(interaktor, required_attr)
           end
         end
+
+        success_attributes_so_far += interaktor.success_attributes
 
         next unless interaktor == interaktors.last
 
         self.class.success_attributes.each do |success_attr|
-          unless interaktor.success_attributes.include?(success_attr)
-            # TODO: Consider allowing ANY previous interaktor success attribute to match instead of just previous
+          unless success_attributes_so_far.include?(success_attr)
             raise Interaktor::Error::OrganizerSuccessAttributeMissingError.new(interaktor, success_attr)
           end
         end
