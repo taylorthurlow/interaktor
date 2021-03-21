@@ -1,6 +1,8 @@
 module Interaktor
   RSpec.describe Organizer do
-    include_examples "lint"
+    let(:interaktor) { FakeInteractor.build_organizer }
+
+    it_behaves_like "lint"
 
     describe ".organize" do
       let(:interaktor2) { instance_double(Interaktor) }

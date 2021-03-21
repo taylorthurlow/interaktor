@@ -1,9 +1,5 @@
 RSpec.shared_examples "lint" do
-  let(:interaktor) { Class.new.include(described_class) }
-
   describe ".call" do
-    let(:instance) { instance_double(interaktor) }
-
     it "calls an instance" do
       expect(interaktor).to receive(:new).once.with({}).and_call_original
 
@@ -26,8 +22,6 @@ RSpec.shared_examples "lint" do
   end
 
   describe ".call!" do
-    let(:instance) { instance_double(interaktor) }
-
     it "calls an instance" do
       expect(interaktor).to receive(:new).once.with({}).and_call_original
 
@@ -50,15 +44,17 @@ RSpec.shared_examples "lint" do
   end
 
   describe "#run" do
-    let(:instance) { interaktor.new }
-
     it "runs the interaktor" do
+      instance = interaktor.new
+
       expect(instance).to receive(:run!).once.with(no_args)
 
       instance.run
     end
 
     it "rescues failure" do
+      instance = interaktor.new
+
       expect(instance).to receive(:run!).and_raise(Interaktor::Failure)
 
       expect {
@@ -67,6 +63,8 @@ RSpec.shared_examples "lint" do
     end
 
     it "raises other errors" do
+      instance = interaktor.new
+
       expect(instance).to receive(:run!).and_raise("foo")
 
       expect {
@@ -76,15 +74,17 @@ RSpec.shared_examples "lint" do
   end
 
   describe "#run!" do
-    let(:instance) { interaktor.new }
-
     it "calls the interaktor" do
+      instance = interaktor.new
+
       expect(instance).to receive(:call).once.with(no_args)
 
       instance.run!
     end
 
     it "raises failure" do
+      instance = interaktor.new
+
       expect(instance).to receive(:run!).and_raise(Interaktor::Failure)
 
       expect {
@@ -93,6 +93,8 @@ RSpec.shared_examples "lint" do
     end
 
     it "raises other errors" do
+      instance = interaktor.new
+
       expect(instance).to receive(:run!).and_raise("foo")
 
       expect {
@@ -102,9 +104,9 @@ RSpec.shared_examples "lint" do
   end
 
   describe "#call" do
-    let(:instance) { interaktor.new }
-
     it "exists" do
+      instance = interaktor.new
+
       expect(instance).to respond_to(:call)
       expect { instance.call }.not_to raise_error
       expect { instance.method(:call) }.not_to raise_error
@@ -112,9 +114,9 @@ RSpec.shared_examples "lint" do
   end
 
   describe "#rollback" do
-    let(:instance) { interaktor.new }
-
     it "exists" do
+      instance = interaktor.new
+
       expect(instance).to respond_to(:rollback)
       expect { instance.rollback }.not_to raise_error
       expect { instance.method(:rollback) }.not_to raise_error
@@ -122,8 +124,6 @@ RSpec.shared_examples "lint" do
   end
 
   describe "required attributes" do
-    let(:instance) { instance_double(interaktor) }
-
     it "initializes successfully when the attribute is provided" do
       interaktor.class_eval { required :bar }
 
@@ -168,8 +168,6 @@ RSpec.shared_examples "lint" do
   end
 
   describe "optional attributes" do
-    let(:instance) { instance_double(interaktor) }
-
     it "initializes successfully when the attribute is provided" do
       interaktor.class_eval { optional :bar }
 

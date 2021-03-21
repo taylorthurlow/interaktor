@@ -1,3 +1,5 @@
 RSpec.describe Interaktor do
-  include_examples "lint"
+  let(:interaktor) { FakeInteractor.build_interaktor("AnInteraktor") }
+
+  it_behaves_like "lint"
 end
