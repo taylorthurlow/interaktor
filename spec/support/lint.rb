@@ -123,6 +123,65 @@ RSpec.shared_examples "lint" do
     end
   end
 
+  describe "#required_attributes" do
+    it "returns the attributes" do
+      interaktor.class_eval { required :foo, :bar }
+
+      expect(interaktor.required_attributes).to contain_exactly(:foo, :bar)
+    end
+  end
+
+  describe "#optional_attributes" do
+    it "returns the attributes" do
+      interaktor.class_eval { optional :foo, :bar }
+
+      expect(interaktor.optional_attributes).to contain_exactly(:foo, :bar)
+    end
+  end
+
+  describe "#input_attributes" do
+    it "returns both required and optional attributes" do
+      interaktor.class_eval do
+        required :foo
+        optional :bar
+      end
+
+      expect(interaktor.required_attributes).to contain_exactly(:foo)
+      expect(interaktor.optional_attributes).to contain_exactly(:bar)
+      expect(interaktor.input_attributes).to contain_exactly(:foo, :bar)
+    end
+  end
+
+  describe "#failure_attributes" do
+    it "returns the attributes" do
+      interaktor.class_eval { failure :foo, :bar }
+
+      expect(interaktor.failure_attributes).to contain_exactly(:foo, :bar)
+    end
+  end
+
+  describe "#success_attributes" do
+    it "returns the attributes" do
+      interaktor.class_eval { success :foo, :bar }
+
+      expect(interaktor.success_attributes).to contain_exactly(:foo, :bar)
+    end
+  end
+
+  describe "#optional_defaults" do
+    it "returns the default value hash" do
+      interaktor.class_eval do
+        optional :foo, default: "bar"
+        optional :baz, default: "wadus"
+      end
+
+      expect(interaktor.optional_defaults).to eq(
+        foo: "bar",
+        baz: "wadus",
+      )
+    end
+  end
+
   describe "required attributes" do
     it "initializes successfully when the attribute is provided" do
       interaktor.class_eval { required :bar }
