@@ -11,7 +11,7 @@ class Interaktor::Error::OrganizerSuccessAttributeMissingError < Interaktor::Err
   end
 
   def message
-    <<~MESSAGE.strip.gsub(/\s+/, " ")
+    <<~MESSAGE.strip.tr("\n", "")
       A #{interaktor} organizer requires a '#{attribute}' success attribute,
       but none of the success attributes provided by any of the organized
       interaktors list it.

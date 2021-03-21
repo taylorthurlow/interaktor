@@ -11,7 +11,7 @@ class Interaktor::Error::OrganizerMissingPassedAttributeError < Interaktor::Erro
   end
 
   def message
-    <<~MESSAGE.strip.gsub(/\s+/, " ")
+    <<~MESSAGE.strip.tr("\n", "")
       An organized #{interaktor} interaktor requires a '#{attribute}' input
       attribute, but none of the interaktors that come before it in the
       organizer list it as a success attribute, and the organizer does not list
