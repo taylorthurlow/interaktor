@@ -55,11 +55,11 @@ module Interaktor::Organizer
       # @type [Array<Symbol>]
       success_attributes_so_far = []
 
-      success_attributes_so_far += self.class.required_attributes
+      success_attributes_so_far += self.class.required_input_attributes
 
       # @param interaktor [Class]
       interaktors.each do |interaktor|
-        interaktor.required_attributes.each do |required_attr|
+        interaktor.required_input_attributes.each do |required_attr|
           unless success_attributes_so_far.include?(required_attr)
             raise Interaktor::Error::OrganizerMissingPassedAttributeError.new(interaktor, required_attr)
           end

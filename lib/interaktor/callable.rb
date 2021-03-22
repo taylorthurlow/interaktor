@@ -1,3 +1,7 @@
+require "dry-schema"
+
+Dry::Schema.load_extensions(:info)
+
 module Interaktor::Callable
   # When the module is included in a class, add the relevant class methods to
   # that class.
@@ -12,30 +16,40 @@ module Interaktor::Callable
     # the interaktor.
     #
     # @return [Array<Symbol>]
-    def required_attributes
-      @required_attributes ||= []
+    def required_input_attributes
+      @required_input_attributes ||= input_schema.info[:keys].select { |_, info| info[:required] }.keys
     end
 
-    # The list of attributes which are NOT required to be passed in when
+    # The list of attributes which are not required to be passed in when
     # calling the interaktor.
     #
     # @return [Array<Symbol>]
-    def optional_attributes
-      @optional_attributes ||= []
+    def optional_input_attributes
+      # Adding an optional attribute with NO predicates with Dry::Schema is
+      # sort of a "nothing statement" - the schema can sort of ignore it. The
+      # problem is that the optional-with-no-predicate key is not included in
+      # the #info results, so we need to find an list of keys elsewhere, find
+      # the ones that are listed there but not in the #info results, and find
+      # the difference. The result are the keys that are omitted from the #info
+      # result because they are optional and have no predicates.
+      #
+      # See https://github.com/dry-rb/dry-schema/issues/347
+      @optional_input_attributes ||= begin
+          attributes_in_info = input_schema.info[:keys].keys
+          all_attributes = input_schema.key_map.keys.map(&:id)
+          optional_attributes_by_exclusion = all_attributes - attributes_in_info
+
+          explicitly_optional_attributes = input_schema.info[:keys].reject { |_, info| info[:required] }.keys
+
+          explicitly_optional_attributes + optional_attributes_by_exclusion
+        end
     end
 
-    # A list of optional attributes and their default values.
-    #
-    # @return [Array<Symbol>]
-    def optional_defaults
-      @optional_defaults ||= {}
-    end
-
-    # A list of attributes which could be passed when calling the interaktor.
+    # The complete list of input attributes.
     #
     # @return [Array<Symbol>]
     def input_attributes
-      required_attributes + optional_attributes
+      required_input_attributes + optional_input_attributes
     end
 
     # The list of attributes which are required to be passed in when calling
@@ -54,55 +68,47 @@ module Interaktor::Callable
       @success_attributes ||= []
     end
 
-    # A DSL method for documenting required interaktor attributes.
+    # Get the input attribute schema. Fall back to an empty schema with a
+    # configuration that will deny ALL provided attributes - not defining an
+    # input schema should mean the interaktor has no input attributes.
     #
-    # @param attributes [Symbol, Array<Symbol>] the list of attribute names
-    # @param options [Hash]
-    #
-    # @return [void]
-    def required(*attributes, **options)
-      required_attributes.concat attributes
-
-      attributes.each do |attribute|
-        # Define getter
-        define_method(attribute) { @context.send(attribute) }
-
-        # Define setter
-        define_method("#{attribute}=".to_sym) do |value|
-          @context.send("#{attribute}=".to_sym, value)
-        end
-
-        raise Interaktor::Error::UnknownOptionError.new(self.class.to_s, options) if options.any?
-      end
+    # @return [Dry::Schema::Params]
+    def input_schema
+      @input_schema || Dry::Schema.Params { config.validate_keys = true }
     end
 
-    # A DSL method for documenting optional interaktor attributes.
-    #
-    # @param attributes [Symbol, Array<Symbol>] the list of attribute names
-    # @param options [Hash]
-    #
-    # @return [void]
-    def optional(*attributes, **options)
-      optional_attributes.concat attributes
+    # @param schema [Dry::Schema::Params, nil] a predefined schema object
+    # @yield a new Dry::Schema::Params definition block
+    def input(schema = nil, &block)
+      raise "No schema or schema definition block provided to interaktor input." if schema.nil? && !block
 
-      attributes.each do |attribute|
+      raise "Provided both a schema and a schema definition block for interaktor input." if schema && block
+
+      if schema
+        raise "Provided argument is not a Dry::Schema::Params object." unless schema.is_a?(Dry::Schema::Params)
+
+        @input_schema = schema
+      elsif block
+        @input_schema = Dry::Schema.Params do
+          # Assume we want to reject unknown attributes, but allow a provided
+          # schema definition block to further modify the config if desired
+          config.validate_keys = true
+
+          instance_eval(&block)
+        end
+      end
+
+      # define the getters and setters for the input attributes
+      @input_schema.key_map.keys.each do |key| # rubocop:disable Style/HashEachMethods
+        attribute_name = key.id
+
         # Define getter
-        define_method(attribute) { @context.send(attribute) }
+        define_method(attribute_name) { @context.send(attribute_name) }
 
         # Define setter
-        define_method("#{attribute}=".to_sym) do |value|
-          unless @context.to_h.key?(attribute)
-            raise Interaktor::Error::DisallowedAttributeAssignmentError.new(self.class.to_s, [attribute])
-          end
-
-          @context.send("#{attribute}=".to_sym, value)
+        define_method("#{attribute_name}=".to_sym) do |value|
+          @context.send("#{attribute_name}=".to_sym, value)
         end
-
-        # Handle options
-        optional_defaults[attribute] = options[:default] if options[:default]
-        options.delete(:default)
-
-        raise Interaktor::Error::UnknownOptionError.new(self.class.to_s, options) if options.any?
       end
     end
 
@@ -178,8 +184,7 @@ module Interaktor::Callable
 
       case context
       when Hash
-        apply_default_optional_attributes(context)
-        verify_attribute_presence(context)
+        validate_schema(context)
 
         new(context).tap(&run_method).instance_variable_get(:@context)
       when Interaktor::Context
@@ -190,33 +195,19 @@ module Interaktor::Callable
       end
     end
 
-    # Check the provided context against the attributes defined with the DSL
-    # methods, and determine if there are any attributes which are required and
-    # have not been provided, or if there are any attributes which have been
-    # provided but are not listed as either required or optional.
-    #
-    # @param context [Interaktor::Context] the context to check
+    # @param context [Hash]
     #
     # @return [void]
-    def verify_attribute_presence(context)
-      # TODO: Add "allow_nil?" option to required attributes
-      missing_attrs = required_attributes.reject { |required_attr| context.to_h.key?(required_attr) }
-      raise Interaktor::Error::MissingAttributeError.new(self, missing_attrs) if missing_attrs.any?
+    def validate_schema(context)
+      return unless input_schema
 
-      allowed_attrs = required_attributes + optional_attributes
-      extra_attrs = context.to_h.keys.reject { |attr| allowed_attrs.include?(attr) }
-      raise Interaktor::Error::UnknownAttributeError.new(self, extra_attrs) if extra_attrs.any?
-    end
+      result = input_schema.call(context)
 
-    # Given the list of optional default attribute values defined by the class,
-    # assign those default values to the context if they were omitted.
-    #
-    # @param context [Interaktor::Context]
-    #
-    # @return [void]
-    def apply_default_optional_attributes(context)
-      optional_defaults.each do |attribute, default|
-        context[attribute] ||= default
+      if result.errors.any?
+        raise Interaktor::Error::AttributeSchemaValidationError.new(
+          self,
+          result.errors.to_h,
+        )
       end
     end
   end
