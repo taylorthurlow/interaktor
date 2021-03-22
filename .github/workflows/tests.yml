@@ -11,6 +11,8 @@ jobs:
         ruby: [2.5, 2.6, 2.7, 3.0, head, debug]
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ endsWith(matrix.ruby, 'head') || matrix.ruby == 'debug' }}
+    env:
+      BUNDLE_GEMFILE: "Gemfile.ci"
     steps:
       - uses: actions/checkout@v2
       - name: Set up Ruby
@@ -18,7 +20,5 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
-      - name: Install dependencies
-        run: bundle install
       - name: Run tests
         run: bundle exec rspec
