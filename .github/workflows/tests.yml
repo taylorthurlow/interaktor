@@ -7,9 +7,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, macos]
+        os: [ubuntu-latest, macos-latest]
         ruby: [2.5, 2.6, 2.7, 3.0, head, debug]
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.os }}
     continue-on-error: ${{ endsWith(matrix.ruby, 'head') || matrix.ruby == 'debug' }}
     steps:
       - uses: actions/checkout@v2
