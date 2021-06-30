@@ -28,6 +28,8 @@ class Interaktor::Error::AttributeSchemaValidationError < Interaktor::Error::Bas
       errors.each do |error|
         result << "    - #{error}"
       end
+
+      result << "\n  "
     end
 
     result
