@@ -9,7 +9,7 @@
 
 Fundamentally, Interaktor is the same as Interactor, but with the following changes:
 
-- Required explicit definition of interaktor "attributes" which replaces the concept of the interaktor context. Attributes can be required or optional, and support options like default values.
+- Required explicit definition of interaktor "attributes" which replaces the concept of the interaktor context. Attributes are defined using a schema DSL provided by [dry-schema](https://github.com/dry-rb/dry-schema), which allows for complex validation, if desired.
 - The interaktor "context" is no longer a public-facing concept, all data/attribute accessors/setters are defined as attributes
 - Attributes passed to `#fail!` must be defined in advance
 - Interaktors support early-exit functionality through the use of `#success!`, which functions the same as `#fail!` in that you must define the required success attributes on the interaktor
@@ -34,15 +34,18 @@ Interaktors are used to encapsulate your application's [business logic](http://e
 
 Depending on its definition, an interaktor may require attributes to be passed in when it is invoked. These attributes contain everything the interaktor needs to do its work.
 
-You may define `required` or `optional` attributes.
+Attributes are defined using a schema DSL provided by the [dry-schema](https://github.com/dry-rb/dry-schema) gem. It allows the construction of schemas for validating attributes. The schema is typically provided as a block argument to the `input` class method as seen below.
+
+This example is an extremely simple case, and dry-schema supports highly complex schema validation, like type checking, nested hash data validation, and more. For more information on defining an attribute schema, please see the [dry-schema documentation website](https://dry-rb.org/gems/dry-schema). This link should take you to the latest version of dry-schema, but be sure to check that the version of dry-schema in your application bundle matches the documentation you are viewing.
 
 ```ruby
 class CreateUser
   include Interaktor
 
-  required :name
-
-  optional :email
+  input do
+    required(:name)
+    optional(:email)
+  end
 
   def call
     User.create!(
@@ -53,8 +56,11 @@ class CreateUser
 end
 
 CreateUser.call(name: "Foo Bar")
-
 ```
+
+`input` will also accept a `Dry::Schema::Params` object directly, if for some reason the schema needs to be constructed elsewhere.
+
+**A note about type checking**: Type checking is cool, but Ruby is a dynamic language, and Ruby developers tend to utilize the idea of [duck typing](https://en.wikipedia.org/wiki/Duck_typing). Forcing the attributes of an interaktor to be of a certain type in order to validate might sound like a good idea, but it can often cause problems in situations where you might like to use duck typing, for example, when using stubs in tests.
 
 #### Output attributes
 
@@ -66,11 +72,17 @@ The use of `#success!` allows you to early-return from an interaktor's work. If 
 class CreateUser
   include Interaktor
 
-  required :name
+  input do
+    required(:name).filled(:string)
+  end
 
-  success :user_id
+  success do
+    required(:user_id).value(:integer)
+  end
 
-  failure :error_messages
+  failure do
+    required(:error_messages).value(array[:string])
+  end
 
   def call
     user = User.new(name: name)
@@ -98,7 +110,7 @@ end
 
 Normally, however, these exceptions are not seen. In the recommended usage, the caller invokes the interaktor using the class method `.call`, then checks the `#success?` method of the returned object. This works because the `call` class method swallows exceptions. When unit testing an interaktor, if calling custom business logic methods directly and bypassing `call`, be aware that `fail!` will generate such exceptions.
 
-See _Interaktors in the controller_, below, for the recommended usage of `call` and `success?`.
+See _Interaktors in the controller_, below, for the recommended usage of `.call` and `#success?`.
 
 ### Hooks
 
@@ -235,13 +247,19 @@ A basic interaktor is a class that includes `Interaktor` and defines `call`.
 class AuthenticateUser
   include Interaktor
 
-  required :email
-  required :password
+  input do
+    required(:email).filled(:string)
+    required(:password).filled(:string)
+  end
 
-  success :user
-  success :token
+  success do
+    required(:user)
+    required(:token).filled(:string)
+  end
 
-  failure :message
+  failure do
+    required(:message).filled(:string)
+  end
 
   def call
     if user = User.authenticate(email, password)
@@ -263,7 +281,9 @@ An organizer is an important variation on the basic interaktor. Its single purpo
 class PlaceOrder
   include Interaktor::Organizer
 
-  required :order_params
+  input do
+    required(:order_params).filled(:hash)
+  end
 
   organize CreateOrder, ChargeCard, SendThankYou
 end
@@ -304,9 +324,13 @@ In addition, any interaktors that had already run are given the chance to undo t
 class CreateOrder
   include Interaktor
 
-  required :order_params
+  input do
+    required(:order_params).filled(:hash)
+  end
 
-  success :order
+  success do
+    required(:order)
+  end
 
   def call
     order = Order.create(order_params)
@@ -334,13 +358,19 @@ When written correctly, an interaktor is easy to test because it only _does_ one
 class AuthenticateUser
   include Interaktor
 
-  required :email
-  required :password
+  input do
+    required(:email).filled(:string)
+    required(:password).filled(:string)
+  end
 
-  success :user
-  success :token
+  success do
+    required(:user)
+    required(:token).filled(:string)
+  end
 
-  failure :message
+  failure do
+    required(:message).filled(:string)
+  end
 
   def call
     if user = User.authenticate(email, password)
@@ -406,12 +436,18 @@ It's a good idea to define your own interfaces to your models. Doing so makes it
 class AuthenticateUser
   include Interaktor
 
-  required :email
-  required :password
+  input do
+    required(:email).filled(:string)
+    required(:password).filled(:string)
+  end
 
-  success :user
+  success do
+    required(:user)
+  end
 
-  failure :message
+  failure do
+    required(:message).filled(:string)
+  end
 
   def call
     user = User.find_by(email: email)
