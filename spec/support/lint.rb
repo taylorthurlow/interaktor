@@ -201,6 +201,60 @@ RSpec.shared_examples "lint" do |interaktor_class|
     end
   end
 
+  describe "#required_success_attributes" do
+    it "returns the attributes" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        success do
+          required(:foo)
+          required(:bar)
+          optional(:baz)
+        end
+      end
+
+      expect(interaktor.required_success_attributes).to contain_exactly(:foo, :bar)
+    end
+
+    it "returns empty array when not defined" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class)
+
+      expect(interaktor.required_success_attributes).to be_empty
+    end
+  end
+
+  describe "#optional_success_attributes" do
+    it "returns the attributes" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        success do
+          required(:foo)
+          required(:bar)
+          optional(:baz)
+        end
+      end
+
+      expect(interaktor.optional_success_attributes).to contain_exactly(:baz)
+    end
+
+    it "returns empty array when not defined" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class)
+
+      expect(interaktor.optional_success_attributes).to be_empty
+    end
+  end
+
+  describe "#success_attributes" do
+    it "returns both required and optional attributes" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        success do
+          required(:foo)
+          required(:bar)
+          optional(:baz)
+        end
+      end
+
+      expect(interaktor.success_attributes).to contain_exactly(:foo, :bar, :baz)
+    end
+  end
+
   describe "#failure_attributes" do
     it "returns the attributes" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
@@ -208,16 +262,6 @@ RSpec.shared_examples "lint" do |interaktor_class|
       end
 
       expect(interaktor.failure_attributes).to contain_exactly(:foo, :bar)
-    end
-  end
-
-  describe "#success_attributes" do
-    it "returns the attributes" do
-      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
-        success :foo, :bar
-      end
-
-      expect(interaktor.success_attributes).to contain_exactly(:foo, :bar)
     end
   end
 
@@ -426,15 +470,22 @@ RSpec.shared_examples "lint" do |interaktor_class|
     end
   end
 
-  describe "success attributes" do
-    it "succeeds when the correct attributes are provided" do
+  describe "success attributes", focus: true do
+    it "accepts a schema object" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
-        success :bar
+        success(Dry::Schema.Params { required(:bar).filled(:string) })
 
         def call
           success!(bar: "baz")
         end
       end
+
+      expect(interaktor.success_schema).to be_a Dry::Schema::Params
+      expect(interaktor.success_schema.info).to eq(
+        keys: { bar: { required: true, type: "string" } },
+      )
+
+      expect(interaktor.required_success_attributes).to contain_exactly(:bar)
 
       result = interaktor.call
 
@@ -442,44 +493,99 @@ RSpec.shared_examples "lint" do |interaktor_class|
       expect(result.bar).to eq "baz"
     end
 
+    it "accepts a schema definition block" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        success { required(:bar).filled(:string) }
+
+        def call
+          success!(bar: "baz")
+        end
+      end
+
+      expect(interaktor.success_schema).to be_a Dry::Schema::Params
+      expect(interaktor.success_schema.info).to eq(
+        keys: { bar: { required: true, type: "string" } },
+      )
+
+      expect(interaktor.required_success_attributes).to contain_exactly(:bar)
+
+      result = interaktor.call
+
+      expect(result.success?).to be true
+      expect(result.bar).to eq "baz"
+    end
+
+    it "raises an exception when the attribute is required and not provided" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        success { required(:bar).filled(:string) }
+
+        def call
+          success!
+        end
+      end
+
+      expect {
+        result = interaktor.call
+      }.to raise_error(
+        an_instance_of(Interaktor::Error::AttributeSchemaValidationError).and(
+          having_attributes(
+            interaktor: interaktor,
+            validation_errors: { bar: ["is missing"] },
+          )
+        )
+      )
+    end
+
+    it "raises an exception when the attribute is provided but not included in the schema" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        success { required(:bar).filled(:string) }
+
+        def call
+          success!(bar: "baz", foo: "wadus")
+        end
+      end
+
+      expect {
+        result = interaktor.call
+      }.to raise_error(
+        an_instance_of(Interaktor::Error::AttributeSchemaValidationError).and(
+          having_attributes(
+            interaktor: interaktor,
+            validation_errors: { foo: ["is not allowed"] },
+          )
+        )
+      )
+    end
+
+    it "allows missing optional attributes" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        success { optional(:bar).filled(:string) }
+
+        def call
+          success!
+        end
+      end
+
+      expect(interaktor.optional_success_attributes).to contain_exactly(:bar)
+
+      result = interaktor.call
+
+      expect(result.success?).to be true
+      expect(result.bar).to be nil
+    end
+
     it "raises an exception when the correct attributes are not provided because #success! is not called" do
-      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) { success :bar }
-
-      expect { interaktor.call }.to(
-        raise_error(
-          an_instance_of(Interaktor::Error::MissingAttributeError).and having_attributes(attributes: [:bar])
-        )
-      )
-    end
-
-    it "raises an exception when the correct attributes are not provided in the call to #success!" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
-        success :bar
+        success { required(:bar).filled(:string) }
 
         def call
-          success!({})
+          # do nothing and succeed implicitly
         end
       end
 
       expect { interaktor.call }.to(
         raise_error(
-          an_instance_of(Interaktor::Error::MissingAttributeError).and having_attributes(attributes: [:bar])
-        )
-      )
-    end
-
-    it "raises an exception when unknown attributes are provided" do
-      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
-        success :bar
-
-        def call
-          success!(bar: "baz", baz: "wadus")
-        end
-      end
-
-      expect { interaktor.call }.to(
-        raise_error(
-          an_instance_of(Interaktor::Error::UnknownAttributeError).and having_attributes(attributes: [:baz])
+          an_instance_of(Interaktor::Error::MissingExplicitSuccessError).and having_attributes(attributes: [:bar])
         )
       )
     end

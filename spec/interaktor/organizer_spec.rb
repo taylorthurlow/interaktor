@@ -50,12 +50,12 @@ RSpec.describe Interaktor::Organizer do
     it "calls each interaktor in order" do
       organizer = FakeInteraktor.build_interaktor(type: described_class) do
         input { required(:foo) }
-        success :foo
+        success { required(:foo) }
       end
 
       interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
         input { required(:foo) }
-        success :foo
+        success { required(:foo) }
 
         def call
           success!(foo: "bar")
@@ -64,7 +64,7 @@ RSpec.describe Interaktor::Organizer do
 
       interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
         input { required(:foo) }
-        success :foo
+        success { required(:foo) }
 
         def call
           success!(foo: "baz")
@@ -73,7 +73,7 @@ RSpec.describe Interaktor::Organizer do
 
       interaktor3 = FakeInteraktor.build_interaktor("Interaktor3") do
         input { required(:foo) }
-        success :foo
+        success { required(:foo) }
 
         def call
           success!(foo: "wadus")
@@ -98,7 +98,7 @@ RSpec.describe Interaktor::Organizer do
 
       interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
         input { required(:foo) }
-        success :bar
+        success { required(:bar) }
 
         def call
           success!(bar: "baz")
@@ -128,14 +128,14 @@ RSpec.describe Interaktor::Organizer do
     it "allows an interaktor to accept required attributes from previous success attributes" do
       organizer = FakeInteraktor.build_interaktor(type: described_class)
       interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
-        success :foo
+        success { required(:foo) }
 
         def call
           success!(foo: "whatever")
         end
       end
       interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
-        success :bar
+        success { required(:bar) }
 
         def call
           success!(bar: "whatever")
@@ -180,14 +180,14 @@ RSpec.describe Interaktor::Organizer do
     it "allows an interaktor to accept required attributes from the original organizer AND previous success attributes" do
       organizer = FakeInteraktor.build_interaktor(type: described_class) { input { required(:foo) } }
       interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
-        success :bar
+        success { required(:bar) }
 
         def call
           success!(bar: "whatever")
         end
       end
       interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
-        success :baz
+        success { required(:baz) }
 
         def call
           success!(baz: "whatever")
@@ -231,7 +231,7 @@ RSpec.describe Interaktor::Organizer do
     end
 
     it "raises an exception if the organizer's last interaktor does not include the organizer's success attributes" do
-      organizer = FakeInteraktor.build_interaktor(type: described_class) { success :final }
+      organizer = FakeInteraktor.build_interaktor(type: described_class) { success { required(:final) } }
       interaktor1 = FakeInteraktor.build_interaktor("Interaktor1")
 
       allow(organizer).to receive(:organized).and_return([interaktor1])
