@@ -23,13 +23,30 @@ class Interaktor::Error::AttributeSchemaValidationError < Interaktor::Error::Bas
     result = ""
 
     validation_errors.each do |attribute, errors|
-      result << "#{attribute}:\n"
+      result << error_entry(attribute, errors)
+    end
 
-      errors.each do |error|
-        result << "    - #{error}"
+    result
+  end
+
+  def error_entry(key, value, depth = 0)
+    result = " " * depth * 2
+
+    case value
+    when Hash
+      result << "#{key}:\n"
+      value.each do |sub_key, sub_value|
+        result << "  "
+        result << error_entry(sub_key, sub_value, depth + 1)
       end
-
-      result << "\n  "
+    when Array
+      result << "#{key}:\n"
+      value.each do |error_message|
+        result << "  "
+        result << error_entry(nil, error_message, depth + 1)
+      end
+    else
+      result << "- #{value}\n"
     end
 
     result
