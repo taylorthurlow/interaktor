@@ -12,12 +12,18 @@ module Interaktor::Callable
   end
 
   module ClassMethods
+    ####################
+    # INPUT ATTRIBUTES #
+    ####################
+
     # The list of attributes which are required to be passed in when calling
     # the interaktor.
     #
     # @return [Array<Symbol>]
     def required_input_attributes
-      @required_input_attributes ||= input_schema.info[:keys].select { |_, info| info[:required] }.keys
+      @required_input_attributes ||= input_schema.info[:keys]
+                                                 .select { |_, info| info[:required] }
+                                                 .keys
     end
 
     # The list of attributes which are not required to be passed in when
@@ -50,22 +56,6 @@ module Interaktor::Callable
     # @return [Array<Symbol>]
     def input_attributes
       required_input_attributes + optional_input_attributes
-    end
-
-    # The list of attributes which are required to be passed in when calling
-    # `#fail!` from within the interaktor.
-    #
-    # @return [Array<Symbol>]
-    def failure_attributes
-      @failure_attributes ||= []
-    end
-
-    # The list of attributes which are required to be passed in when calling
-    # `#fail!` from within the interaktor.
-    #
-    # @return [Array<Symbol>]
-    def success_attributes
-      @success_attributes ||= []
     end
 
     # Get the input attribute schema. Fall back to an empty schema with a
@@ -112,33 +102,189 @@ module Interaktor::Callable
       end
     end
 
-    # A DSL method for documenting required interaktor failure attributes.
+    ######################
+    # FAILURE ATTRIBUTES #
+    ######################
+
+    # The list of attributes which are required to be provided when failing the
+    # interaktor.
     #
-    # @param attributes [Symbol, Array<Symbol>] the list of attribute names
-    # @param options [Hash]
+    # @return [Array<Symbol>]
+    def required_failure_attributes
+      @required_failure_attributes ||= failure_schema.info[:keys]
+        .select { |_, info| info[:required] }
+        .keys
+    end
+
+    # The list of attributes which are not required to be provided when failing
+    # the interaktor.
+    #
+    # @return [Array<Symbol>]
+    def optional_failure_attributes
+      # Adding an optional attribute with NO predicates with Dry::Schema is
+      # sort of a "nothing statement" - the schema can sort of ignore it. The
+      # problem is that the optional-with-no-predicate key is not included in
+      # the #info results, so we need to find an list of keys elsewhere, find
+      # the ones that are listed there but not in the #info results, and find
+      # the difference. The result are the keys that are omitted from the #info
+      # result because they are optional and have no predicates.
+      #
+      # See https://github.com/dry-rb/dry-schema/issues/347
+      @optional_failure_attributes ||= begin
+          attributes_in_info = failure_schema.info[:keys].keys
+          all_attributes = failure_schema.key_map.keys.map(&:id)
+          optional_attributes_by_exclusion = all_attributes - attributes_in_info
+
+          explicitly_optional_attributes = failure_schema.info[:keys].reject { |_, info| info[:required] }.keys
+
+          explicitly_optional_attributes + optional_attributes_by_exclusion
+        end
+    end
+
+    # The complete list of failure attributes.
+    #
+    # @return [Array<Symbol>]
+    def failure_attributes
+      required_failure_attributes + optional_failure_attributes
+    end
+
+    # Get the failure attribute schema. Fall back to an empty schema with a
+    # configuration that will deny ALL provided attributes - not defining an
+    # failure schema should mean the interaktor has no failure attributes.
+    #
+    # @return [Dry::Schema::Params]
+    def failure_schema
+      @failure_schema || Dry::Schema.Params { config.validate_keys = true }
+    end
+
+    # @param context [Hash]
     #
     # @return [void]
-    def failure(*attributes, **options)
-      failure_attributes.concat attributes
+    def validate_failure_schema(context)
+      return unless failure_schema
 
-      attributes.each do |attribute|
-        # Handle options
-        raise Interaktor::Error::UnknownOptionError.new(self.class.to_s, options) if options.any?
+      result = failure_schema.call(context)
+
+      if result.errors.any?
+        raise Interaktor::Error::AttributeSchemaValidationError.new(
+          self,
+          result.errors.to_h,
+        )
       end
     end
 
-    # A DSL method for documenting required interaktor success attributes.
+    # @param schema [Dry::Schema::Params, nil] a predefined schema object
+    # @yield a new Dry::Schema::Params definition block
+    def failure(schema = nil, &block)
+      raise "No schema or schema definition block provided to interaktor failure method." if schema.nil? && !block
+
+      raise "Provided both a schema and a schema definition block for interaktor failure method." if schema && block
+
+      if schema
+        raise "Provided argument is not a Dry::Schema::Params object." unless schema.is_a?(Dry::Schema::Params)
+
+        @failure_schema = schema
+      elsif block
+        @failure_schema = Dry::Schema.Params do
+          # Assume we want to reject unknown attributes, but allow a provided
+          # schema definition block to further modify the config if desired
+          config.validate_keys = true
+
+          instance_eval(&block)
+        end
+      end
+    end
+
+    ######################
+    # SUCCESS ATTRIBUTES #
+    ######################
+
+    # The list of attributes which are required to be provided when the
+    # interaktor succeeds.
     #
-    # @param attributes [Symbol, Array<Symbol>] the list of attribute names
-    # @param options [Hash]
+    # @return [Array<Symbol>]
+    def required_success_attributes
+      @required_success_attributes ||= success_schema.info[:keys]
+                                                     .select { |_, info| info[:required] }
+                                                     .keys
+    end
+
+    # The list of attributes which are not required to be provided when failing
+    # the interaktor.
+    #
+    # @return [Array<Symbol>]
+    def optional_success_attributes
+      # Adding an optional attribute with NO predicates with Dry::Schema is
+      # sort of a "nothing statement" - the schema can sort of ignore it. The
+      # problem is that the optional-with-no-predicate key is not included in
+      # the #info results, so we need to find an list of keys elsewhere, find
+      # the ones that are listed there but not in the #info results, and find
+      # the difference. The result are the keys that are omitted from the #info
+      # result because they are optional and have no predicates.
+      #
+      # See https://github.com/dry-rb/dry-schema/issues/347
+      @optional_success_attributes ||= begin
+          attributes_in_info = success_schema.info[:keys].keys
+          all_attributes = success_schema.key_map.keys.map(&:id)
+          optional_attributes_by_exclusion = all_attributes - attributes_in_info
+
+          explicitly_optional_attributes = success_schema.info[:keys].reject { |_, info| info[:required] }.keys
+
+          explicitly_optional_attributes + optional_attributes_by_exclusion
+        end
+    end
+
+    # The complete list of success attributes.
+    #
+    # @return [Array<Symbol>]
+    def success_attributes
+      required_success_attributes + optional_success_attributes
+    end
+
+    # Get the success attribute schema. Fall back to an empty schema with a
+    # configuration that will deny ALL provided attributes - not defining an
+    # success schema should mean the interaktor has no success attributes.
+    #
+    # @return [Dry::Schema::Params]
+    def success_schema
+      @success_schema || Dry::Schema.Params { config.validate_keys = true }
+    end
+
+    # @param context [Hash]
     #
     # @return [void]
-    def success(*attributes, **options)
-      success_attributes.concat attributes
+    def validate_success_schema(context)
+      return unless success_schema
 
-      attributes.each do |attribute|
-        # Handle options
-        raise Interaktor::Error::UnknownOptionError.new(self.class.to_s, options) if options.any?
+      result = success_schema.call(context)
+
+      if result.errors.any?
+        raise Interaktor::Error::AttributeSchemaValidationError.new(
+          self,
+          result.errors.to_h,
+        )
+      end
+    end
+
+    # @param schema [Dry::Schema::Params, nil] a predefined schema object
+    # @yield a new Dry::Schema::Params definition block
+    def success(schema = nil, &block)
+      raise "No schema or schema definition block provided to interaktor success method." if schema.nil? && !block
+
+      raise "Provided both a schema and a schema definition block for interaktor success method." if schema && block
+
+      if schema
+        raise "Provided argument is not a Dry::Schema::Params object." unless schema.is_a?(Dry::Schema::Params)
+
+        @success_schema = schema
+      elsif block
+        @success_schema = Dry::Schema.Params do
+          # Assume we want to reject unknown attributes, but allow a provided
+          # schema definition block to further modify the config if desired
+          config.validate_keys = true
+
+          instance_eval(&block)
+        end
       end
     end
 
@@ -184,7 +330,7 @@ module Interaktor::Callable
 
       case context
       when Hash
-        validate_schema(context)
+        validate_input_schema(context)
 
         new(context).tap(&run_method).instance_variable_get(:@context)
       when Interaktor::Context
@@ -198,7 +344,7 @@ module Interaktor::Callable
     # @param context [Hash]
     #
     # @return [void]
-    def validate_schema(context)
+    def validate_input_schema(context)
       return unless input_schema
 
       result = input_schema.call(context)

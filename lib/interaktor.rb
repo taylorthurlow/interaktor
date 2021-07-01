@@ -32,11 +32,7 @@ module Interaktor
   #
   # @return [void]
   def fail!(failure_attributes = {})
-    # Make sure we have all required attributes
-    missing_attrs = self.class
-                        .failure_attributes
-                        .reject { |failure_attr| failure_attributes.key?(failure_attr) }
-    raise Interaktor::Error::MissingAttributeError.new(self.class.to_s, missing_attrs) if missing_attrs.any?
+    self.class.validate_failure_schema(failure_attributes)
 
     @context.fail!(failure_attributes)
   end
@@ -48,16 +44,7 @@ module Interaktor
   #
   # @return [void]
   def success!(success_attributes = {})
-    # Make sure we have all required attributes
-    missing_attrs = self.class
-                        .success_attributes
-                        .reject { |success_attr| success_attributes.key?(success_attr) }
-    raise Interaktor::Error::MissingAttributeError.new(self.class.to_s, missing_attrs) if missing_attrs.any?
-
-    # Make sure we haven't provided any unknown attributes
-    unknown_attrs = success_attributes.keys
-                                      .reject { |success_attr| self.class.success_attributes.include?(success_attr) }
-    raise Interaktor::Error::UnknownAttributeError.new(self.class.to_s, unknown_attrs) if unknown_attrs.any?
+    self.class.validate_success_schema(success_attributes)
 
     @context.success!(success_attributes)
   end
@@ -104,8 +91,8 @@ module Interaktor
         call
       end
 
-      if !@context.early_return? && self.class.success_attributes.any?
-        raise Interaktor::Error::MissingAttributeError.new(self, self.class.success_attributes)
+      if !@context.early_return? && self.class.required_success_attributes.any?
+        raise Interaktor::Error::MissingExplicitSuccessError.new(self, self.class.required_success_attributes)
       end
 
       @context.called!(self)
