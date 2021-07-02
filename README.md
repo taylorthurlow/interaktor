@@ -350,7 +350,7 @@ end
 
 **NOTE:** The interaktor that fails is _not_ rolled back. Because every interaktor should have a single purpose, there should be no need to clean up after any failed interaktor. This is why the rollback method above can access the `order` success attribute - rollback is only called on successful interaktors.
 
-### Exception handling
+## Exception handling
 
 Interaktors support some basic exception handling callbacks. Treat exception handlers like `rescue` statements for the entire interaktor. The callback you define must still satisfy the defined success and/or failure attributes, if any are present. As such, if you do not call `#fail!` in the callback, the exception will be handled and the interaktor will be considered successful.
 
@@ -421,7 +421,7 @@ class DoSomething
 end
 ```
 
-#### Handling errors on an organizer level
+### Handling errors on an organizer level
 
 Error handling is also possible with organizers. Handling an exception on an organizer level will cause the organizer to succeed or fail as a whole, meaning it is possible for the organizer to succeed, but not to have necessarily run all of its organized interaktors.
 
