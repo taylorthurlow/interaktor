@@ -350,6 +350,81 @@ end
 
 **NOTE:** The interaktor that fails is _not_ rolled back. Because every interaktor should have a single purpose, there should be no need to clean up after any failed interaktor. This is why the rollback method above can access the `order` success attribute - rollback is only called on successful interaktors.
 
+### Exception handling
+
+Interaktors support some basic exception handling callbacks. Treat exception handlers like `rescue` statements for the entire interaktor. The callback you define must still satisfy the defined success and/or failure attributes, if any are present. As such, if you do not call `#fail!` in the callback, the exception will be handled and the interaktor will be considered successful.
+
+Here is an example exception handler with no defined callback, which will implicitly cause the interaktor to succeed, assuming you have not defined any success attributes.
+
+```ruby
+class DoSomething
+  include Interaktor
+
+  handle_exception StandardError
+
+  def call
+    raise StandardError, "a thing went wrong"
+  end
+end
+```
+
+Here is an example with a required success attribute.
+
+```ruby
+class DoSomething
+  include Interaktor
+
+  success { required(:message).filled(:string) }
+
+  handle_exception StandardError do |error|
+    success!(message: error.message)
+  end
+
+  def call
+    raise StandardError, "a thing went wrong"
+  end
+end
+```
+
+Or with a failure attribute:
+
+```ruby
+class DoSomething
+  include Interaktor
+
+  failure { required(:message).filled(:string) }
+
+  handle_exception StandardError do |error|
+    fail!(message: error.message)
+  end
+
+  def call
+    raise StandardError, "a thing went wrong"
+  end
+end
+```
+
+The handler callback itself can be provided as a block, as done in the examples above. If you already have a proc or lambda object you would like to provide as the callback, you can do so using the `with` keyword parameter:
+
+```ruby
+class DoSomething
+  include Interaktor
+
+  success { required(:message).filled(:string) }
+
+  handler = ->(error) { success!(message: error.message) }
+  handle_exception StandardError, with: handler
+
+  def call
+    raise StandardError, "a thing went wrong"
+  end
+end
+```
+
+#### Handling errors on an organizer level
+
+Error handling is also possible with organizers. Handling an exception on an organizer level will cause the organizer to succeed or fail as a whole, meaning it is possible for the organizer to succeed, but not to have necessarily run all of its organized interaktors.
+
 ## Testing interaktors
 
 When written correctly, an interaktor is easy to test because it only _does_ one thing. Take the following interaktor:
