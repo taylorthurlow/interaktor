@@ -620,4 +620,210 @@ RSpec.shared_examples "lint" do |interaktor_class|
       expect(result.bar).to be nil
     end
   end
+
+  describe "exception handlers" do
+    it "handles an exception and succeeds implicitly when provided an existing proc" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        handler_proc = ->(_e) { "do some stuff" }
+        handle_exception StandardError, with: handler_proc
+
+        def call
+          raise StandardError, "it broke"
+        end
+      end
+
+      result = interaktor.call
+
+      expect(result.success?).to be true
+    end
+
+    it "handles an exception and succeeds explicitly when provided an existing proc" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        success { required(:foo) }
+
+        handler_proc = ->(_e) { success!(foo: "bar") }
+        handle_exception StandardError, with: handler_proc
+
+        def call
+          raise StandardError, "it broke"
+        end
+      end
+
+      result = interaktor.call
+
+      expect(result.success?).to be true
+      expect(result.foo).to eq "bar"
+    end
+
+    it "handles an exception and succeeds implicitly when provided a block" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        handle_exception(StandardError) { "do some stuff" }
+
+        def call
+          raise StandardError, "it broke"
+        end
+      end
+
+      result = interaktor.call
+
+      expect(result.success?).to be true
+    end
+
+    it "handles an exception and succeeds explicitly when provided a block" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        success { required(:foo) }
+
+        handle_exception(StandardError) { success!(foo: "bar") }
+
+        def call
+          raise StandardError, "it broke"
+        end
+      end
+
+      result = interaktor.call
+
+      expect(result.success?).to be true
+      expect(result.foo).to eq "bar"
+    end
+
+    it "handles an exception and succeeds implicitly when no proc or block provided" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        handle_exception(StandardError)
+
+        def call
+          raise StandardError, "it broke"
+        end
+      end
+
+      result = interaktor.call
+
+      expect(result.success?).to be true
+    end
+
+    it "handles an exception and fails when provided an existing proc" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        failure { required(:foo) }
+
+        handler_proc = ->(_e) { fail!(foo: "bar") }
+        handle_exception StandardError, with: handler_proc
+
+        def call
+          raise StandardError, "it broke"
+        end
+      end
+
+      result = interaktor.call
+
+      expect(result.success?).to be false
+      expect(result.foo).to eq "bar"
+    end
+
+    it "handles an exception and fails when provided a block" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        failure { required(:foo) }
+
+        handle_exception(StandardError) { fail!(foo: "bar") }
+
+        def call
+          raise StandardError, "it broke"
+        end
+      end
+
+      result = interaktor.call
+
+      expect(result.success?).to be false
+      expect(result.foo).to eq "bar"
+    end
+
+    it "accepts multiple exception classes as constants or strings" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        input { required(:exception_class) }
+        failure { required(:message) }
+
+        handle_exception StandardError, "RuntimeError"
+
+        def call
+          raise exception_class
+        end
+      end
+
+      result = interaktor.call(exception_class: StandardError)
+      expect(result.success?).to be true
+
+      result = interaktor.call(exception_class: RuntimeError)
+      expect(result.success?).to be true
+
+      expect {
+        interaktor.call(exception_class: Exception)
+      }.to raise_error(Exception)
+    end
+
+    it "raises an exception if the handler succeeds but is missing success attributes" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        success { required(:foo) }
+
+        handle_exception StandardError
+
+        def call
+          raise StandardError, "it broke but that's ok"
+        end
+      end
+
+      expect { interaktor.call }.to(
+        raise_error(
+          an_instance_of(Interaktor::Error::MissingExplicitSuccessError).and(
+            having_attributes(
+              interaktor: interaktor,
+              attributes: [:foo],
+            )
+          )
+        )
+      )
+    end
+
+    it "raises an exception if the handler fails and is missing failure attributes" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        failure { required(:foo) }
+
+        handle_exception(StandardError) { fail! }
+
+        def call
+          raise StandardError, "it broke"
+        end
+      end
+
+      expect { interaktor.call }.to(
+        raise_error(
+          an_instance_of(Interaktor::Error::AttributeSchemaValidationError).and(
+            having_attributes(
+              interaktor: interaktor,
+              validation_errors: { foo: ["is missing"] },
+            )
+          )
+        )
+      )
+    end
+
+    it "correctly raises exceptions that occur in the handler" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        handle_exception(RuntimeError) { raise StandardError, "some other problem" }
+
+        def call
+          raise RuntimeError, "it broke" # rubocop:disable Style/RedundantException
+        end
+      end
+
+      expect { interaktor.call }.to(raise_error(StandardError, "some other problem"))
+    end
+
+    it "raises an exception if both a block and proc and provided" do
+      expect {
+        FakeInteraktor.build_interaktor(type: interaktor_class) do
+          handle_exception(StandardError, with: ->(_e) { "stuff" }) do
+            "stuff"
+          end
+        end
+      }.to(raise_error(Interaktor::Error::InvalidExceptionHandlerError))
+    end
+  end
 end

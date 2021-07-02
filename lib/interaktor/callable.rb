@@ -310,6 +310,32 @@ module Interaktor::Callable
       execute(context, true)
     end
 
+    # Handle one or more exceptions with either a directly provided lambda, or
+    # a block to be used as a lambda.
+    #
+    # @param exceptions_to_handle [String, Class<Exception>, Array<String, Class<Exception>>]
+    #   a list of one or more exceptions to handle, consisting of any
+    #   combination of class-names-as-strings and class constants directly.
+    # @param with [Proc, nil] An optional pre-defined Proc or lambda function
+    #   which should be used to handle the exception. Either `with` or a block
+    #   must be provided, but not both. The provided proc, lambda, or block
+    #   should accept a single argument, the exception instance.
+    def handle_exception(*exceptions_to_handle, with: nil, &block)
+      # Disallow providing both a block and a predefined proc.
+      raise Interaktor::Error::InvalidExceptionHandlerError, self if with && block
+
+      exceptions_to_handle.map { |e| Kernel.const_get(e.to_s) }
+                          .each { |e| exception_handlers[e.name.to_sym] = with || block }
+    end
+
+    # A hash containing handled exception class names as keys and values
+    # containing lambdas which represent the handlers for each.
+    #
+    # @return [Hash{Symbol=>Lambda}]
+    def exception_handlers
+      @exception_handlers ||= {}
+    end
+
     private
 
     # The main execution method triggered by the public `#call` or `#call!`
