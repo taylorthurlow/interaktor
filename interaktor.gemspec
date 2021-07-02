@@ -3,7 +3,7 @@ Gem::Specification.new do |spec|
   spec.version = "0.2.0"
 
   spec.author = "Taylor Thurlow"
-  spec.email = "taylorthurlow@me.com"
+  spec.email = "thurlow@hey.com"
   spec.description = "A common interface for building service objects."
   spec.summary = "Simple service object implementation"
   spec.homepage = "https://github.com/taylorthurlow/interaktor"
