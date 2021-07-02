@@ -32,6 +32,10 @@ module Interaktor
   #
   # @return [void]
   def fail!(failure_attributes = {})
+    # Silently remove any attributes that are not included in the schema
+    allowed_keys = self.class.failure_schema.key_map.keys.map { |k| k.name.to_sym }
+    failure_attributes.select! { |k, _| allowed_keys.include?(k.to_sym) }
+
     self.class.validate_failure_schema(failure_attributes)
 
     @context.fail!(failure_attributes)
@@ -44,6 +48,10 @@ module Interaktor
   #
   # @return [void]
   def success!(success_attributes = {})
+    # Silently remove any attributes that are not included in the schema
+    allowed_keys = self.class.success_schema.key_map.keys.map { |k| k.name.to_sym }
+    success_attributes.select! { |k, _| allowed_keys.include?(k.to_sym) }
+
     self.class.validate_success_schema(success_attributes)
 
     @context.success!(success_attributes)

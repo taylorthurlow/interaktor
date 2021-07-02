@@ -64,7 +64,23 @@ module Interaktor::Callable
     #
     # @return [Dry::Schema::Params]
     def input_schema
-      @input_schema || Dry::Schema.Params { config.validate_keys = true }
+      @input_schema || Dry::Schema.Params
+    end
+
+    # @param context [Hash]
+    #
+    # @return [void]
+    def validate_input_schema(context)
+      return unless input_schema
+
+      result = input_schema.call(context)
+
+      if result.errors.any?
+        raise Interaktor::Error::AttributeSchemaValidationError.new(
+          self,
+          result.errors.to_h,
+        )
+      end
     end
 
     # @param schema [Dry::Schema::Params, nil] a predefined schema object
@@ -79,13 +95,7 @@ module Interaktor::Callable
 
         @input_schema = schema
       elsif block
-        @input_schema = Dry::Schema.Params do
-          # Assume we want to reject unknown attributes, but allow a provided
-          # schema definition block to further modify the config if desired
-          config.validate_keys = true
-
-          instance_eval(&block)
-        end
+        @input_schema = Dry::Schema.Params { instance_eval(&block) }
       end
 
       # define the getters and setters for the input attributes
@@ -154,7 +164,7 @@ module Interaktor::Callable
     #
     # @return [Dry::Schema::Params]
     def failure_schema
-      @failure_schema || Dry::Schema.Params { config.validate_keys = true }
+      @failure_schema || Dry::Schema.Params
     end
 
     # @param context [Hash]
@@ -185,13 +195,7 @@ module Interaktor::Callable
 
         @failure_schema = schema
       elsif block
-        @failure_schema = Dry::Schema.Params do
-          # Assume we want to reject unknown attributes, but allow a provided
-          # schema definition block to further modify the config if desired
-          config.validate_keys = true
-
-          instance_eval(&block)
-        end
+        @failure_schema = Dry::Schema.Params { instance_eval(&block) }
       end
     end
 
@@ -247,7 +251,7 @@ module Interaktor::Callable
     #
     # @return [Dry::Schema::Params]
     def success_schema
-      @success_schema || Dry::Schema.Params { config.validate_keys = true }
+      @success_schema || Dry::Schema.Params
     end
 
     # @param context [Hash]
@@ -278,13 +282,7 @@ module Interaktor::Callable
 
         @success_schema = schema
       elsif block
-        @success_schema = Dry::Schema.Params do
-          # Assume we want to reject unknown attributes, but allow a provided
-          # schema definition block to further modify the config if desired
-          config.validate_keys = true
-
-          instance_eval(&block)
-        end
+        @success_schema = Dry::Schema.Params { instance_eval(&block) }
       end
     end
 
@@ -330,6 +328,10 @@ module Interaktor::Callable
 
       case context
       when Hash
+        # Silently remove any attributes that are not included in the schema
+        allowed_keys = input_schema.key_map.keys.map { |k| k.name.to_sym }
+        context.select! { |k, _| allowed_keys.include?(k.to_sym) }
+
         validate_input_schema(context)
 
         new(context).tap(&run_method).instance_variable_get(:@context)
@@ -338,22 +340,6 @@ module Interaktor::Callable
       else
         raise ArgumentError,
               "Expected a hash argument when calling the interaktor, got a #{context.class} instead."
-      end
-    end
-
-    # @param context [Hash]
-    #
-    # @return [void]
-    def validate_input_schema(context)
-      return unless input_schema
-
-      result = input_schema.call(context)
-
-      if result.errors.any?
-        raise Interaktor::Error::AttributeSchemaValidationError.new(
-          self,
-          result.errors.to_h,
-        )
       end
     end
   end
