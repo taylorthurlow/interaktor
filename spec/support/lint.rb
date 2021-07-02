@@ -9,19 +9,12 @@ RSpec.shared_examples "lint" do |interaktor_class|
       expect(result.success?).to be true
     end
 
-    it "fails when an unknown attribute is provided" do
+    it "removes unknown provided attributes" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class)
 
-      expect {
-        interaktor.call(baz: "wadus")
-      }.to raise_error(
-        an_instance_of(Interaktor::Error::AttributeSchemaValidationError).and(
-          having_attributes(
-            interaktor: interaktor,
-            validation_errors: { baz: ["is not allowed"] },
-          )
-        )
-      )
+      result = interaktor.call(baz: "wadus")
+
+      expect(result.baz).to be nil
     end
 
     it "fails when a non-hash or non-context argument is passed" do
@@ -43,19 +36,12 @@ RSpec.shared_examples "lint" do |interaktor_class|
       expect(result.success?).to be true
     end
 
-    it "fails when an unknown attribute is provided" do
+    it "removes unknown provided attributes" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class)
 
-      expect {
-        interaktor.call!(baz: "wadus")
-      }.to raise_error(
-        an_instance_of(Interaktor::Error::AttributeSchemaValidationError).and(
-          having_attributes(
-            interaktor: interaktor,
-            validation_errors: { baz: ["is not allowed"] },
-          )
-        )
-      )
+      result = interaktor.call!(baz: "wadus")
+
+      expect(result.baz).to be nil
     end
 
     it "fails when a non-hash or non-context argument is passed" do
@@ -363,21 +349,14 @@ RSpec.shared_examples "lint" do |interaktor_class|
       )
     end
 
-    it "raises an exception when an attribute is provided but not included in the schema" do
+    it "removes unknown provided attributes" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
         input { required(:bar).filled(:string) }
       end
 
-      expect {
-        interaktor.call!(bar: "baz", foo: "unexpected")
-      }.to raise_error(
-        an_instance_of(Interaktor::Error::AttributeSchemaValidationError).and(
-          having_attributes(
-            interaktor: interaktor,
-            validation_errors: { foo: ["is not allowed"] },
-          )
-        )
-      )
+      result = interaktor.call!(bar: "baz", foo: "unexpected")
+
+      expect(result.foo).to be nil
     end
 
     it "allows provided optional attributes" do
@@ -427,90 +406,6 @@ RSpec.shared_examples "lint" do |interaktor_class|
       expect(result.success?).to be true
       expect(result.foo).to eq "one"
       expect(result.bar).to eq "two"
-    end
-  end
-
-  describe "required attributes" do
-    it "initializes successfully when the attribute is provided" do
-      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
-        input { required(:bar) }
-      end
-
-      result = interaktor.call(bar: "baz")
-
-      expect(result.success?).to be true
-      expect(result.bar).to eq "baz"
-    end
-
-    it "creates a value setter" do
-      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
-        input { required(:bar) }
-
-        def call
-          self.bar = "wadus"
-        end
-      end
-
-      result = interaktor.call(bar: "baz")
-
-      expect(result.success?).to be true
-      expect(result.bar).to eq "wadus"
-    end
-
-    it "raises an exception when the attribute is not provided" do
-      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
-        input { required(:bar) }
-      end
-
-      expect {
-        interaktor.call!
-      }.to raise_error(
-        an_instance_of(Interaktor::Error::AttributeSchemaValidationError).and(
-          having_attributes(
-            interaktor: interaktor,
-            validation_errors: { bar: ["is missing"] },
-          )
-        )
-      )
-    end
-  end
-
-  describe "optional attributes" do
-    it "initializes successfully when the attribute is provided" do
-      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
-        input { optional(:bar) }
-      end
-
-      result = interaktor.call(bar: "baz")
-
-      expect(result.success?).to be true
-      expect(result.bar).to eq "baz"
-    end
-
-    it "initializes successfully when the attribute is not provided" do
-      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
-        input { optional(:bar) }
-      end
-
-      result = interaktor.call
-
-      expect(result.success?).to be true
-      expect(result.bar).to be_nil
-    end
-
-    it "creates a value setter" do
-      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
-        input { optional(:bar) }
-
-        def call
-          self.bar = "wadus"
-        end
-      end
-
-      result = interaktor.call(bar: "baz")
-
-      expect(result.success?).to be true
-      expect(result.bar).to eq "wadus"
     end
   end
 
@@ -580,7 +475,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
       )
     end
 
-    it "raises an exception when the attribute is provided but not included in the schema" do
+    it "removes unknown provided attributes" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
         success { required(:bar).filled(:string) }
 
@@ -589,16 +484,9 @@ RSpec.shared_examples "lint" do |interaktor_class|
         end
       end
 
-      expect {
-        result = interaktor.call
-      }.to raise_error(
-        an_instance_of(Interaktor::Error::AttributeSchemaValidationError).and(
-          having_attributes(
-            interaktor: interaktor,
-            validation_errors: { foo: ["is not allowed"] },
-          )
-        )
-      )
+      result = interaktor.call
+
+      expect(result.foo).to be nil
     end
 
     it "allows missing optional attributes" do
@@ -701,7 +589,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
       )
     end
 
-    it "raises an exception when the attribute is provided but not included in the schema" do
+    it "removes unknown provided attributes" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
         failure { required(:bar).filled(:string) }
 
@@ -710,16 +598,9 @@ RSpec.shared_examples "lint" do |interaktor_class|
         end
       end
 
-      expect {
-        result = interaktor.call
-      }.to raise_error(
-        an_instance_of(Interaktor::Error::AttributeSchemaValidationError).and(
-          having_attributes(
-            interaktor: interaktor,
-            validation_errors: { foo: ["is not allowed"] },
-          )
-        )
-      )
+      result = interaktor.call
+
+      expect(result.foo).to be nil
     end
 
     it "allows missing optional attributes" do
