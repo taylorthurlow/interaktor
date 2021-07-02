@@ -320,6 +320,10 @@ module Interaktor::Callable
     #   which should be used to handle the exception. Either `with` or a block
     #   must be provided, but not both. The provided proc, lambda, or block
     #   should accept a single argument, the exception instance.
+    #
+    # @yield [error] the callback to execute when a matching error is raised
+    #
+    # @yieldparam [Exception] error the error that was raised
     def handle_exception(*exceptions_to_handle, with: nil, &block)
       # Disallow providing both a block and a predefined proc.
       raise Interaktor::Error::InvalidExceptionHandlerError, self if with && block
