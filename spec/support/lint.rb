@@ -825,5 +825,27 @@ RSpec.shared_examples "lint" do |interaktor_class|
         end
       }.to(raise_error(Interaktor::Error::InvalidExceptionHandlerError))
     end
+
+    it "allows multiple calls to handle_exception" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        input { required(:exception_class) }
+        success { required(:message) }
+
+        handle_exception(StandardError) { success!(message: "foo") }
+        handle_exception(RuntimeError) { success!(message: "bar") }
+
+        def call
+          raise exception_class
+        end
+      end
+
+      result = interaktor.call(exception_class: StandardError)
+      expect(result.success?).to be true
+      expect(result.message).to eq "foo"
+
+      result = interaktor.call(exception_class: RuntimeError)
+      expect(result.success?).to be true
+      expect(result.message).to eq "bar"
+    end
   end
 end
