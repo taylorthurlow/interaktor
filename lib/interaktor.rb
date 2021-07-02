@@ -107,12 +107,14 @@ module Interaktor
     rescue *self.class.exception_handlers.keys.map { |c| Kernel.const_get(c) } => e
       handler_proc = self.class.exception_handlers[e.class.name.to_sym]
 
-      catch(:early_return) do
-        instance_exec(e, &handler_proc) if handler_proc
-      rescue StandardError => e
-        @context.rollback!
+      if handler_proc
+        catch(:early_return) do
+          instance_exec(e, &handler_proc)
+        rescue StandardError => e
+          @context.rollback!
 
-        raise e
+          raise e
+        end
       end
 
       if !@context.early_return? && self.class.required_success_attributes.any?
