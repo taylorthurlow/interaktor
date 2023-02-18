@@ -308,7 +308,95 @@ module Interaktor
         end
       end
 
-      context "with around, before and after hooks" do
+      context "with an ensure_hook method" do
+        let(:hooked) {
+          build_hooked do
+            ensure_hook :add_ensure
+
+            private
+
+            def add_ensure
+              steps << :ensure
+            end
+          end
+        }
+
+        it "runs the after hook method" do
+          expect(hooked.process).to eq([
+            :process,
+            :ensure,
+          ])
+        end
+      end
+
+      context "with an ensure_hook block" do
+        let(:hooked) {
+          build_hooked do
+            ensure_hook do
+              steps << :ensure
+            end
+          end
+        }
+
+        it "runs the after hook block" do
+          expect(hooked.process).to eq([
+            :process,
+            :ensure,
+          ])
+        end
+      end
+
+      context "with an ensure_hook method and block in one call" do
+        let(:hooked) {
+          build_hooked do
+            ensure_hook :add_ensure1 do
+              steps << :ensure2
+            end
+
+            private
+
+            def add_ensure1
+              steps << :ensure1
+            end
+          end
+        }
+
+        it "runs the after hook method and block in order" do
+          expect(hooked.process).to eq([
+            :process,
+            :ensure1,
+            :ensure2,
+          ])
+        end
+      end
+
+      context "with an ensure_hook method and block in multiple calls" do
+        let(:hooked) {
+          build_hooked do
+            ensure_hook do
+              steps << :ensure1
+            end
+
+            ensure_hook :add_ensure2
+
+            private
+
+            def add_ensure2
+              steps << :ensure2
+            end
+          end
+        }
+
+        it "runs the ensure_hook block and method in order" do
+          expect(hooked.process).to eq([
+            :process,
+            :ensure1,
+            :ensure2,
+          ])
+        end
+      end
+
+      context "with around, before, after and ensure_hook hooks" do
         let(:hooked) {
           build_hooked do
             around do |hooked|
@@ -338,6 +426,14 @@ module Interaktor
             after do
               steps << :after2
             end
+
+            ensure_hook do
+              steps << :ensure1
+            end
+
+            ensure_hook do
+              steps << :ensure2
+            end
           end
         }
 
@@ -352,6 +448,8 @@ module Interaktor
             :after1,
             :around_after2,
             :around_after1,
+            :ensure1,
+            :ensure2,
           ])
         end
       end
