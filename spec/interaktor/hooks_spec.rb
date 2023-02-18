@@ -361,7 +361,7 @@ module Interaktor
           end
         }
 
-        it "runs the after hook method and block in order" do
+        it "runs the ensure_hook method and block in order" do
           expect(hooked.process).to eq([
             :process,
             :ensure1,
