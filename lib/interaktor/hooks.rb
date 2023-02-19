@@ -126,6 +126,38 @@ module Interaktor::Hooks
       hooks.each { |hook| after_hooks.unshift(hook) }
     end
 
+    # Public: Declare hooks to run after Interaktor invocation in an ensure block.
+    # The after method may be called multiple times; subsequent calls append
+    # declared hooks to existing ensure_hook hooks.
+    #
+    # hooks - Zero or more Symbol method names representing instance methods
+    #         to be called after interaktor invocation.
+    # block - An optional block to be executed as a hook. If given, the block
+    #         is executed before methods corresponding to any given Symbols.
+    #
+    # Examples
+    #
+    #   class MyInteraktor
+    #     include Interaktor
+    #
+    #     ensure_hook :close_file
+    #
+    #     ensure_hook do
+    #       puts "finished"
+    #     end
+    #
+    #     def call
+    #       puts "called"
+    #     end
+    #
+    #     private
+    #
+    #     def close_file
+    #       context.file.close
+    #     end
+    #   end
+    #
+    # Returns nothing.
     def ensure_hook(*hooks, &block)
       hooks << block if block
       hooks.each { |hook| ensure_hooks.push(hook) }
@@ -188,6 +220,22 @@ module Interaktor::Hooks
       @after_hooks ||= []
     end
 
+    # Internal: An Array of declared hooks to run afer Interaktor
+    # invocation in an ensure block. The hooks appear in the order
+    # in which they will be run.
+    #
+    # Examples
+    #
+    #   class MyInteraktor
+    #     include Interaktor
+    #
+    #     ensure_hook :set_finish_time, :say_goodbye
+    #   end
+    #
+    #   MyInteraktor.ensure_hooks
+    #   # => [:say_goodbye, :set_finish_time]
+    #
+    # Returns an Array of Symbols and Procs.
     def ensure_hooks
       @ensure_hooks ||= []
     end
@@ -195,8 +243,8 @@ module Interaktor::Hooks
 
   private
 
-  # Internal: Run around, before and after hooks around yielded execution. The
-  # required block is surrounded with hooks and executed.
+  # Internal: Run around, before, after and ensure hooks around yielded execution.
+  # The required block is surrounded with hooks and executed.
   #
   # Examples
   #
@@ -248,7 +296,9 @@ module Interaktor::Hooks
     run_hooks(self.class.after_hooks)
   end
 
-
+  # Internal: Run ensure hooks.
+  #
+  # Returns nothing.
   def run_ensure_hooks
     run_hooks(self.class.ensure_hooks)
   end
