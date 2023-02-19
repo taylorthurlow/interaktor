@@ -144,6 +144,16 @@ after do
 end
 ```
 
+#### Ensure hooks
+
+Very similar to `after` hooks, but the hooks are run in an `ensure` block in the order they are defined.
+
+```ruby
+ensure_hook do
+  file.close
+end
+```
+
 #### Around hooks
 
 You can also define around hooks in the same way as before or after hooks, using either a block or a symbol method name. The difference is that an around block or method accepts a single argument. Invoking the `call` method on that argument will continue invocation of the interaktor. For example, with a block:
