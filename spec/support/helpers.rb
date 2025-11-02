@@ -3,12 +3,10 @@ class FakeInteraktor
   def self.build_interaktor(name = nil, type: Interaktor, &block)
     name ||= "MyTest#{type}"
 
-    result = Class.new.include(type)
-
-    result.class_eval(&block) if block
-    result.define_singleton_method(:inspect) { name.to_s }
-    result.define_singleton_method(:to_s) { inspect }
-
-    result
+    Class.new.include(type).tap do |klass|
+      klass.class_eval(&block) if block
+      klass.define_singleton_method(:inspect) { name.to_s }
+      klass.define_singleton_method(:to_s) { inspect }
+    end
   end
 end

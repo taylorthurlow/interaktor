@@ -21,7 +21,8 @@ module Interaktor::Callable
     #
     # @return [Array<Symbol>]
     def required_input_attributes
-      @required_input_attributes ||= input_schema.info[:keys]
+      @required_input_attributes ||= input_schema
+        .info[:keys]
         .select { |_, info| info[:required] }
         .keys
     end
@@ -67,18 +68,14 @@ module Interaktor::Callable
       @input_schema || Dry::Schema.Params
     end
 
-    # @param context [Hash]
-    #
-    # @return [void]
-    def validate_input_schema(context)
-      return unless input_schema
+    # @param args [Hash]
+    def validate_input_schema(args)
+      return if !input_schema
 
-      result = input_schema.call(context)
-
-      if result.errors.any?
+      if (errors = input_schema.call(args).errors).any?
         raise Interaktor::Error::AttributeSchemaValidationError.new(
           self,
-          result.errors.to_h
+          errors.to_h
         )
       end
     end
@@ -103,11 +100,11 @@ module Interaktor::Callable
         attribute_name = key.id
 
         # Define getter
-        define_method(attribute_name) { @context.send(attribute_name) }
+        define_method(attribute_name) { @interaction.send(attribute_name) }
 
         # Define setter
         define_method(:"#{attribute_name}=") do |value|
-          @context.send(:"#{attribute_name}=", value)
+          @interaction.send(:"#{attribute_name}=", value)
         end
       end
     end
@@ -167,18 +164,16 @@ module Interaktor::Callable
       @failure_schema || Dry::Schema.Params
     end
 
-    # @param context [Hash]
+    # @param args [Hash]
     #
     # @return [void]
-    def validate_failure_schema(context)
-      return unless failure_schema
+    def validate_failure_schema(args)
+      return if !failure_schema
 
-      result = failure_schema.call(context)
-
-      if result.errors.any?
+      if (errors = failure_schema.call(args).errors).any?
         raise Interaktor::Error::AttributeSchemaValidationError.new(
           self,
-          result.errors.to_h
+          errors.to_h
         )
       end
     end
@@ -254,18 +249,14 @@ module Interaktor::Callable
       @success_schema || Dry::Schema.Params
     end
 
-    # @param context [Hash]
-    #
-    # @return [void]
-    def validate_success_schema(context)
-      return unless success_schema
+    # @param args [Hash]
+    def validate_success_schema(args)
+      return if !success_schema
 
-      result = success_schema.call(context)
-
-      if result.errors.any?
+      if (errors = success_schema.call(args).errors).any?
         raise Interaktor::Error::AttributeSchemaValidationError.new(
           self,
-          result.errors.to_h
+          errors.to_h
         )
       end
     end
@@ -289,25 +280,23 @@ module Interaktor::Callable
     # Invoke an Interaktor. This is the primary public API method to an
     # interaktor. Interaktor failures will not raise an exception.
     #
-    # @param context [Hash, Interaktor::Context] the context object as a hash
-    #   with attributes or an already-built context
+    # @param args [Hash, Interaktor::Interaction]
     #
-    # @return [Interaktor::Context] the context, following interaktor execution
-    def call(context = {})
-      execute(context, false)
+    # @return [Interaktor::Interaction]
+    def call(args = {})
+      execute(args, raise_exception: false)
     end
 
     # Invoke an Interaktor. This method behaves identically to `#call`, but if
-    # the interaktor is failed, `Interaktor::Failure` is raised.
+    # the interaktor fails, `Interaktor::Failure` is raised.
     #
-    # @param context [Hash, Interaktor::Context] the context object as a hash
-    #   with attributes or an already-built context
+    # @param args [Hash, Interaktor::Interaction]
     #
     # @raises [Interaktor::Failure]
     #
-    # @return [Interaktor::Context] the context, following interaktor execution
-    def call!(context = {})
-      execute(context, true)
+    # @return [Interaktor::Interaction]
+    def call!(args = {})
+      execute(args, raise_exception: true)
     end
 
     private
@@ -315,31 +304,29 @@ module Interaktor::Callable
     # The main execution method triggered by the public `#call` or `#call!`
     # methods.
     #
-    # @param context [Hash, Interaktor::Context] the context object as a hash
-    #   with attributes or an already-built context
+    # @param args [Hash, Interaktor::Interaction]
     # @param raise_exception [Boolean] whether or not to raise exception on
     #   failure
     #
     # @raises [Interaktor::Failure]
     #
-    # @return [Interaktor::Context] the context, following interaktor execution
-    def execute(context, raise_exception)
+    # @return [Interaktor::Interaction]
+    def execute(args, raise_exception:)
       run_method = raise_exception ? :run! : :run
 
-      case context
+      case args
       when Hash
-        # Silently remove any attributes that are not included in the schema
-        allowed_keys = input_schema.key_map.keys.map { |k| k.name.to_sym }
-        context.select! { |k, _| allowed_keys.include?(k.to_sym) }
+        if (disallowed_key = args.keys.find { |k| !input_attributes.include?(k.to_sym) })
+          raise Interaktor::Error::UnknownAttributeError.new(self, disallowed_key)
+        end
 
-        validate_input_schema(context)
-
-        new(context).tap(&run_method).instance_variable_get(:@context)
-      when Interaktor::Context
-        new(context).tap(&run_method).instance_variable_get(:@context)
+        validate_input_schema(args)
+        new(args).tap(&run_method).instance_variable_get(:@interaction)
+      when Interaktor::Interaction
+        new(args).tap(&run_method).instance_variable_get(:@interaction)
       else
         raise ArgumentError,
-          "Expected a hash argument when calling the interaktor, got a #{context.class} instead."
+          "Expected a hash argument when calling the interaktor, got a #{args.class} instead."
       end
     end
   end

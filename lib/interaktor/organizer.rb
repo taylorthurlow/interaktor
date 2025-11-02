@@ -41,8 +41,16 @@ module Interaktor::Organizer
     def call
       check_attribute_flow_valid
 
+      latest_interaction = nil
+
       self.class.organized.each do |interaktor|
-        catch(:early_return) { interaktor.call!(@context) }
+        catch(:early_return) do
+          latest_interaction = interaktor.call!(latest_interaction || @interaction)
+        end
+      end
+
+      if latest_interaction
+        @interaction.instance_variable_set(:@success_args, latest_interaction.success_args)
       end
     end
 

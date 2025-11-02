@@ -1,13 +1,13 @@
-# Error raised during Interaktor::Context failure. The error stores a copy of
-# the failed context for debugging purposes.
+# Error raised during interaction failure. The error stores a copy of the failed
+# interaction for debugging purposes.
 class Interaktor::Failure < StandardError
-  # @return [Interaktor::Context] the context of this failure instance
-  attr_reader :context
+  # @return [Interaktor::Interaction] the context of this failure instance
+  attr_reader :interaction
 
-  # @param context [Interaktor::Context] the context in which the error was
-  #   raised
-  def initialize(context = nil)
-    @context = context
+  # @param interaction [Interaktor::Interaction] the interaction in which the
+  #   error was raised
+  def initialize(interaction = nil)
+    @interaction = interaction
     super
   end
 end

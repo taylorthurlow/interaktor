@@ -9,12 +9,12 @@ RSpec.shared_examples "lint" do |interaktor_class|
       expect(result.success?).to be true
     end
 
-    it "removes unknown provided attributes" do
+    it "raises an exception for unknown provided attributes" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class)
 
-      result = interaktor.call(baz: "wadus")
-
-      expect(result.baz).to be nil
+      expect {
+        interaktor.call(baz: "wadus")
+      }.to raise_error(Interaktor::Error::UnknownAttributeError)
     end
 
     it "fails when a non-hash or non-context argument is passed" do
@@ -36,12 +36,12 @@ RSpec.shared_examples "lint" do |interaktor_class|
       expect(result.success?).to be true
     end
 
-    it "removes unknown provided attributes" do
+    it "raises an exception for unknown provided attributes" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class)
 
-      result = interaktor.call!(baz: "wadus")
-
-      expect(result.baz).to be nil
+      expect {
+        interaktor.call!(baz: "wadus")
+      }.to raise_error(Interaktor::Error::UnknownAttributeError)
     end
 
     it "fails when a non-hash or non-context argument is passed" do
@@ -302,16 +302,12 @@ RSpec.shared_examples "lint" do |interaktor_class|
       end
 
       expect(interaktor.input_schema).to be_a Dry::Schema::Params
-      expect(interaktor.input_schema.info).to eq(
-        keys: {bar: {required: true, type: "string"}}
-      )
-
       expect(interaktor.required_input_attributes).to contain_exactly(:bar)
 
       result = interaktor.call(bar: "baz")
 
       expect(result.success?).to be true
-      expect(result.bar).to eq "baz"
+      expect { result.bar }.to raise_error(NoMethodError)
     end
 
     it "accepts a schema definition block" do
@@ -320,16 +316,12 @@ RSpec.shared_examples "lint" do |interaktor_class|
       end
 
       expect(interaktor.input_schema).to be_a Dry::Schema::Params
-      expect(interaktor.input_schema.info).to eq(
-        keys: {bar: {required: true, type: "string"}}
-      )
-
       expect(interaktor.required_input_attributes).to contain_exactly(:bar)
 
       result = interaktor.call(bar: "baz")
 
       expect(result.success?).to be true
-      expect(result.bar).to eq "baz"
+      expect { result.bar }.to raise_error(NoMethodError)
     end
 
     it "raises an exception when the attribute is required and not provided" do
@@ -349,14 +341,14 @@ RSpec.shared_examples "lint" do |interaktor_class|
       )
     end
 
-    it "removes unknown provided attributes" do
+    it "raises an exception for unknown provided attributes" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
         input { required(:bar).filled(:string) }
       end
 
-      result = interaktor.call!(bar: "baz", foo: "unexpected")
-
-      expect(result.foo).to be nil
+      expect {
+        interaktor.call!(bar: "baz", foo: "unexpected")
+      }.to raise_error Interaktor::Error::UnknownAttributeError
     end
 
     it "allows provided optional attributes" do
@@ -369,7 +361,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
       result = interaktor.call(bar: "baz")
 
       expect(result.success?).to be true
-      expect(result.bar).to eq "baz"
+      expect { result.bar }.to raise_error(NoMethodError)
     end
 
     it "allows missing optional attributes" do
@@ -382,10 +374,10 @@ RSpec.shared_examples "lint" do |interaktor_class|
       result = interaktor.call
 
       expect(result.success?).to be true
-      expect(result.bar).to be_nil
+      expect { result.bar }.to raise_error(NoMethodError)
     end
 
-    it "creates attribute getters and setters" do
+    it "creates attribute getters" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
         input do
           required(:foo).filled(:string)
@@ -395,17 +387,14 @@ RSpec.shared_examples "lint" do |interaktor_class|
         def call
           foo
           bar
-
-          self.foo = "one"
-          self.bar = "two"
         end
       end
 
       result = interaktor.call(foo: "bar", bar: "baz")
 
       expect(result.success?).to be true
-      expect(result.foo).to eq "one"
-      expect(result.bar).to eq "two"
+      expect { result.foo }.to raise_error(NoMethodError)
+      expect { result.bar }.to raise_error(NoMethodError)
     end
   end
 
@@ -420,10 +409,6 @@ RSpec.shared_examples "lint" do |interaktor_class|
       end
 
       expect(interaktor.success_schema).to be_a Dry::Schema::Params
-      expect(interaktor.success_schema.info).to eq(
-        keys: {bar: {required: true, type: "string"}}
-      )
-
       expect(interaktor.required_success_attributes).to contain_exactly(:bar)
 
       result = interaktor.call
@@ -442,10 +427,6 @@ RSpec.shared_examples "lint" do |interaktor_class|
       end
 
       expect(interaktor.success_schema).to be_a Dry::Schema::Params
-      expect(interaktor.success_schema.info).to eq(
-        keys: {bar: {required: true, type: "string"}}
-      )
-
       expect(interaktor.required_success_attributes).to contain_exactly(:bar)
 
       result = interaktor.call
@@ -475,7 +456,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
       )
     end
 
-    it "removes unknown provided attributes" do
+    it "raises an exception for unknown provided attributes" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
         success { required(:bar).filled(:string) }
 
@@ -484,9 +465,9 @@ RSpec.shared_examples "lint" do |interaktor_class|
         end
       end
 
-      result = interaktor.call
-
-      expect(result.foo).to be nil
+      expect {
+        interaktor.call
+      }.to raise_error Interaktor::Error::UnknownAttributeError
     end
 
     it "allows missing optional attributes" do
@@ -534,10 +515,6 @@ RSpec.shared_examples "lint" do |interaktor_class|
       end
 
       expect(interaktor.failure_schema).to be_a Dry::Schema::Params
-      expect(interaktor.failure_schema.info).to eq(
-        keys: {bar: {required: true, type: "string"}}
-      )
-
       expect(interaktor.required_failure_attributes).to contain_exactly(:bar)
 
       result = interaktor.call
@@ -556,10 +533,6 @@ RSpec.shared_examples "lint" do |interaktor_class|
       end
 
       expect(interaktor.failure_schema).to be_a Dry::Schema::Params
-      expect(interaktor.failure_schema.info).to eq(
-        keys: {bar: {required: true, type: "string"}}
-      )
-
       expect(interaktor.required_failure_attributes).to contain_exactly(:bar)
 
       result = interaktor.call
@@ -589,7 +562,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
       )
     end
 
-    it "removes unknown provided attributes" do
+    it "raises an exception for unknown provided attributes" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
         failure { required(:bar).filled(:string) }
 
@@ -598,9 +571,9 @@ RSpec.shared_examples "lint" do |interaktor_class|
         end
       end
 
-      result = interaktor.call
-
-      expect(result.foo).to be nil
+      expect {
+        interaktor.call
+      }.to raise_error Interaktor::Error::UnknownAttributeError
     end
 
     it "allows missing optional attributes" do

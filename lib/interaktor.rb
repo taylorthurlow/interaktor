@@ -14,101 +14,87 @@ module Interaktor
       extend ClassMethods
       include Hooks
       include Callable
+
+      interaction_class = Class.new(Interaktor::Interaction) do
+      end
+
+      base.const_set(:Interaction, interaction_class)
     end
   end
 
   module ClassMethods
   end
 
-  # @param context [Hash, Interaktor::Context] the context object as a hash
+  # @param args [Hash, Interaktor::Interaction] the context object as a hash
   #   with attributes or an already-built context
-  def initialize(context = {})
-    @context = Interaktor::Context.build(context)
+  def initialize(args = {})
+    @interaction = self.class::Interaction.new(self, args)
   end
 
-  # Fail the current interaktor.
-  #
-  # @param failure_attributes [Hash{Symbol=>Object}] the context attributes
-  #
-  # @return [void]
-  def fail!(failure_attributes = {})
-    # Silently remove any attributes that are not included in the schema
-    allowed_keys = self.class.failure_schema.key_map.keys.map { |k| k.name.to_sym }
-    failure_attributes.select! { |k, _| allowed_keys.include?(k.to_sym) }
+  # @param args [Hash{Symbol=>Object}]
+  def fail!(args = {})
+    if (disallowed_key = args.keys.find { |k| !self.class.failure_attributes.include?(k.to_sym) })
+      raise Interaktor::Error::UnknownAttributeError.new(self, disallowed_key)
+    end
 
-    self.class.validate_failure_schema(failure_attributes)
-
-    @context.fail!(failure_attributes)
+    self.class.validate_failure_schema(args)
+    @interaction.fail!(args)
   end
 
-  # Terminate execution of the current interaktor and copy the success
-  # attributes into the context.
-  #
-  # @param success_attributes [Hash{Symbol=>Object}] the context attributes
-  #
-  # @return [void]
-  def success!(success_attributes = {})
-    # Silently remove any attributes that are not included in the schema
-    allowed_keys = self.class.success_schema.key_map.keys.map { |k| k.name.to_sym }
-    success_attributes.select! { |k, _| allowed_keys.include?(k.to_sym) }
+  # @param args [Hash]
+  def success!(args = {})
+    if (disallowed_key = args.keys.find { |k| !self.class.success_attributes.include?(k.to_sym) })
+      raise Interaktor::Error::UnknownAttributeError.new(self, disallowed_key)
+    end
 
-    self.class.validate_success_schema(success_attributes)
-
-    @context.success!(success_attributes)
+    self.class.validate_success_schema(args)
+    @interaction.success!(args)
   end
 
   # Invoke an Interaktor instance without any hooks, tracking, or rollback. It
   # is expected that the `#call` instance method is overwritten for each
   # interaktor class.
-  #
-  # @return [void]
   def call
   end
 
   # Reverse prior invocation of an Interaktor instance. Any interaktor class
   # that requires undoing upon downstream failure is expected to overwrite the
   # `#rollback` instance method.
-  #
-  # @return [void]
   def rollback
   end
 
-  # Invoke an interaktor instance along with all defined hooks. The `run`
-  # method is used internally by the `call` class method. After successful
-  # invocation of the interaktor, the instance is tracked within the context.
-  # If the context is failed or any error is raised, the context is rolled
-  # back.
-  #
-  # @return [void]
+  # Invoke an interaktor instance along with all defined hooks. The `run` method
+  # is used internally by the `call` class method. After successful invocation
+  # of the interaktor, the instance is tracked within the context. If the
+  # context is failed or any error is raised, the context is rolled back.
   def run
     run!
-  rescue Interaktor::Failure # rubocop:disable Lint/SuppressedException
+  rescue Interaktor::Failure
   end
 
   # Invoke an Interaktor instance along with all defined hooks, typically used
   # internally by `.call!`. After successful invocation of the interaktor, the
-  # instance is tracked within the context. If the context is failed or any
-  # error is raised, the context is rolled back. This method behaves
-  # identically to `#run` with one notable exception - if the context is failed
-  # during the invocation of the interaktor, `Interaktor::Failure` is raised.
+  # instance is tracked within the interaction. If the interaction is failed or
+  # any error is raised, the interaction is rolled back. This method behaves
+  # identically to `#run` with one notable exception - if the interaction is
+  # failed during the invocation of the interaktor, `Interaktor::Failure` is
+  # raised.
   #
   # @raises [Interaktor::Failure]
-  #
-  # @return [void]
   def run!
     with_hooks do
       catch(:early_return) do
         call
       end
 
-      if !@context.early_return? && self.class.required_success_attributes.any?
+      if self.class.required_success_attributes.any? && !@interaction.success_args
         raise Interaktor::Error::MissingExplicitSuccessError.new(self, self.class.required_success_attributes)
       end
 
-      @context.called!(self)
+      @interaction.called!(self)
     end
   rescue
-    @context.rollback!
+    @interaction.rollback!
     raise
   end
 end
