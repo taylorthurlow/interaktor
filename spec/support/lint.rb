@@ -303,7 +303,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
 
       expect(interaktor.input_schema).to be_a Dry::Schema::Params
       expect(interaktor.input_schema.info).to eq(
-        keys: { bar: { required: true, type: "string" } },
+        keys: {bar: {required: true, type: "string"}}
       )
 
       expect(interaktor.required_input_attributes).to contain_exactly(:bar)
@@ -321,7 +321,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
 
       expect(interaktor.input_schema).to be_a Dry::Schema::Params
       expect(interaktor.input_schema.info).to eq(
-        keys: { bar: { required: true, type: "string" } },
+        keys: {bar: {required: true, type: "string"}}
       )
 
       expect(interaktor.required_input_attributes).to contain_exactly(:bar)
@@ -343,7 +343,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
         an_instance_of(Interaktor::Error::AttributeSchemaValidationError).and(
           having_attributes(
             interaktor: interaktor,
-            validation_errors: { bar: ["is missing"] },
+            validation_errors: {bar: ["is missing"]}
           )
         )
       )
@@ -421,7 +421,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
 
       expect(interaktor.success_schema).to be_a Dry::Schema::Params
       expect(interaktor.success_schema.info).to eq(
-        keys: { bar: { required: true, type: "string" } },
+        keys: {bar: {required: true, type: "string"}}
       )
 
       expect(interaktor.required_success_attributes).to contain_exactly(:bar)
@@ -443,7 +443,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
 
       expect(interaktor.success_schema).to be_a Dry::Schema::Params
       expect(interaktor.success_schema.info).to eq(
-        keys: { bar: { required: true, type: "string" } },
+        keys: {bar: {required: true, type: "string"}}
       )
 
       expect(interaktor.required_success_attributes).to contain_exactly(:bar)
@@ -464,12 +464,12 @@ RSpec.shared_examples "lint" do |interaktor_class|
       end
 
       expect {
-        result = interaktor.call
+        interaktor.call
       }.to raise_error(
         an_instance_of(Interaktor::Error::AttributeSchemaValidationError).and(
           having_attributes(
             interaktor: interaktor,
-            validation_errors: { bar: ["is missing"] },
+            validation_errors: {bar: ["is missing"]}
           )
         )
       )
@@ -517,7 +517,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
 
       expect { interaktor.call }.to(
         raise_error(
-          an_instance_of(Interaktor::Error::MissingExplicitSuccessError).and having_attributes(attributes: [:bar])
+          an_instance_of(Interaktor::Error::MissingExplicitSuccessError).and(having_attributes(attributes: [:bar]))
         )
       )
     end
@@ -535,7 +535,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
 
       expect(interaktor.failure_schema).to be_a Dry::Schema::Params
       expect(interaktor.failure_schema.info).to eq(
-        keys: { bar: { required: true, type: "string" } },
+        keys: {bar: {required: true, type: "string"}}
       )
 
       expect(interaktor.required_failure_attributes).to contain_exactly(:bar)
@@ -557,7 +557,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
 
       expect(interaktor.failure_schema).to be_a Dry::Schema::Params
       expect(interaktor.failure_schema.info).to eq(
-        keys: { bar: { required: true, type: "string" } },
+        keys: {bar: {required: true, type: "string"}}
       )
 
       expect(interaktor.required_failure_attributes).to contain_exactly(:bar)
@@ -578,12 +578,12 @@ RSpec.shared_examples "lint" do |interaktor_class|
       end
 
       expect {
-        result = interaktor.call
+        interaktor.call
       }.to raise_error(
         an_instance_of(Interaktor::Error::AttributeSchemaValidationError).and(
           having_attributes(
             interaktor: interaktor,
-            validation_errors: { bar: ["is missing"] },
+            validation_errors: {bar: ["is missing"]}
           )
         )
       )

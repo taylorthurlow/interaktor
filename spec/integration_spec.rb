@@ -301,21 +301,21 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :around_before4b, :before4b, :call4b, :after4b, :around_after4b,
-             :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
-             :after4, :around_after4,
-             :around_before5, :before5, :call5, :after5, :around_after5,
-             :after, :around_after,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :around_before4b, :before4b, :call4b, :after4b, :around_after4b,
+        :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
+        :after4, :around_after4,
+        :around_before5, :before5, :call5, :after5, :around_after5,
+        :after, :around_after
+      ])
     end
   end
 
@@ -384,7 +384,7 @@ RSpec.describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue StandardError
+        rescue
           nil
         end
       }.not_to change(context, :steps)
@@ -425,8 +425,8 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before,
-           ])
+        :around_before
+      ])
     end
   end
 
@@ -462,12 +462,12 @@ RSpec.describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue StandardError
+        rescue
           nil
         end
       }.to change(context, :steps).from([]).to([
-             :around_before,
-           ])
+        :around_before
+      ])
     end
 
     it "raises the error" do
@@ -505,28 +505,28 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :around_before4b, :before4b, :call4b, :after4b, :around_after4b,
-             :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
-             :after4, :around_after4,
-             :around_before5, :before5, :call5, :after5, :around_after5,
-             :rollback5,
-             :rollback4c,
-             :rollback4b,
-             :rollback4a,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :around_before4b, :before4b, :call4b, :after4b, :around_after4b,
+        :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
+        :after4, :around_after4,
+        :around_before5, :before5, :call5, :after5, :around_after5,
+        :rollback5,
+        :rollback4c,
+        :rollback4b,
+        :rollback4a,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
   end
 
@@ -562,32 +562,32 @@ RSpec.describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue StandardError
+        rescue
           nil
         end
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :around_before4b, :before4b, :call4b, :after4b, :around_after4b,
-             :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
-             :after4, :around_after4,
-             :around_before5, :before5, :call5, :after5, :around_after5,
-             :rollback5,
-             :rollback4c,
-             :rollback4b,
-             :rollback4a,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :around_before4b, :before4b, :call4b, :after4b, :around_after4b,
+        :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
+        :after4, :around_after4,
+        :around_before5, :before5, :call5, :after5, :around_after5,
+        :rollback5,
+        :rollback4c,
+        :rollback4b,
+        :rollback4a,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
 
     it "raises the error" do
@@ -625,29 +625,29 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :around_before4b, :before4b, :call4b, :after4b, :around_after4b,
-             :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
-             :after4, :around_after4,
-             :around_before5, :before5, :call5, :after5, :around_after5,
-             :after,
-             :rollback5,
-             :rollback4c,
-             :rollback4b,
-             :rollback4a,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :around_before4b, :before4b, :call4b, :after4b, :around_after4b,
+        :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
+        :after4, :around_after4,
+        :around_before5, :before5, :call5, :after5, :around_after5,
+        :after,
+        :rollback5,
+        :rollback4c,
+        :rollback4b,
+        :rollback4a,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
   end
 
@@ -683,33 +683,33 @@ RSpec.describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue StandardError
+        rescue
           nil
         end
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :around_before4b, :before4b, :call4b, :after4b, :around_after4b,
-             :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
-             :after4, :around_after4,
-             :around_before5, :before5, :call5, :after5, :around_after5,
-             :after,
-             :rollback5,
-             :rollback4c,
-             :rollback4b,
-             :rollback4a,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :around_before4b, :before4b, :call4b, :after4b, :around_after4b,
+        :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
+        :after4, :around_after4,
+        :around_before5, :before5, :call5, :after5, :around_after5,
+        :after,
+        :rollback5,
+        :rollback4c,
+        :rollback4b,
+        :rollback4a,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
 
     it "raises the error" do
@@ -751,16 +751,16 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
   end
 
@@ -800,20 +800,20 @@ RSpec.describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue StandardError
+        rescue
           nil
         end
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
 
     it "raises the error" do
@@ -855,17 +855,17 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
   end
 
@@ -905,21 +905,21 @@ RSpec.describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue StandardError
+        rescue
           nil
         end
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
 
     it "raises the error" do
@@ -961,17 +961,17 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
   end
 
@@ -1011,21 +1011,21 @@ RSpec.describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue StandardError
+        rescue
           nil
         end
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
 
     it "raises the error" do
@@ -1067,18 +1067,18 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
   end
 
@@ -1118,22 +1118,22 @@ RSpec.describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue StandardError
+        rescue
           nil
         end
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
 
     it "raises the error" do
@@ -1175,18 +1175,18 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
   end
 
@@ -1226,22 +1226,22 @@ RSpec.describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue StandardError
+        rescue
           nil
         end
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
 
     it "raises the error" do
@@ -1283,21 +1283,21 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :rollback4a,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :rollback4a,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
   end
 
@@ -1337,25 +1337,25 @@ RSpec.describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue StandardError
+        rescue
           nil
         end
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :rollback4a,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :rollback4a,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
 
     it "raises the error" do
@@ -1397,22 +1397,22 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :around_before4b,
-             :rollback4a,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :around_before4b,
+        :rollback4a,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
   end
 
@@ -1452,26 +1452,26 @@ RSpec.describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue StandardError
+        rescue
           nil
         end
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :around_before4b,
-             :rollback4a,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :around_before4b,
+        :rollback4a,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
 
     it "raises the error" do
@@ -1513,22 +1513,22 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :around_before4b, :before4b,
-             :rollback4a,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :around_before4b, :before4b,
+        :rollback4a,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
   end
 
@@ -1568,26 +1568,26 @@ RSpec.describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue StandardError
+        rescue
           nil
         end
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :around_before4b, :before4b,
-             :rollback4a,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :around_before4b, :before4b,
+        :rollback4a,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
 
     it "raises the error" do
@@ -1629,23 +1629,23 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :around_before4b, :before4b, :call4b,
-             :rollback4b,
-             :rollback4a,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :around_before4b, :before4b, :call4b,
+        :rollback4b,
+        :rollback4a,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
   end
 
@@ -1685,27 +1685,27 @@ RSpec.describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue StandardError
+        rescue
           nil
         end
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :around_before4b, :before4b, :call4b,
-             :rollback4b,
-             :rollback4a,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :around_before4b, :before4b, :call4b,
+        :rollback4b,
+        :rollback4a,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
 
     it "raises the error" do
@@ -1747,23 +1747,23 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :around_before4b, :before4b, :call4b, :after4b,
-             :rollback4b,
-             :rollback4a,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :around_before4b, :before4b, :call4b, :after4b,
+        :rollback4b,
+        :rollback4a,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
   end
 
@@ -1803,27 +1803,27 @@ RSpec.describe "Integration" do
       expect {
         begin
           organizer.call(context)
-        rescue StandardError
+        rescue
           nil
         end
       }.to change(context, :steps).from([]).to([
-             :around_before, :before,
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :around_before4b, :before4b, :call4b, :after4b,
-             :rollback4b,
-             :rollback4a,
-             :rollback3,
-             :rollback2c,
-             :rollback2b,
-             :rollback2a,
-           ])
+        :around_before, :before,
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :around_before4b, :before4b, :call4b, :after4b,
+        :rollback4b,
+        :rollback4a,
+        :rollback3,
+        :rollback2c,
+        :rollback2b,
+        :rollback2a
+      ])
     end
 
     it "raises the error" do
@@ -1836,7 +1836,7 @@ RSpec.describe "Integration" do
   context "when there are multiple organize calls" do
     it "runs all passed interaktors in correct order" do
       # organizer = build_organizer(organize: [organizer2, interaktor3])
-      interaktors = ([organizer2, interaktor3])
+      interaktors = [organizer2, interaktor3]
 
       organizer = FakeInteraktor.build_interaktor(type: Interaktor::Organizer) do
         organize(interaktors)
@@ -1851,19 +1851,19 @@ RSpec.describe "Integration" do
       expect {
         organizer.call(context)
       }.to change(context, :steps).from([]).to([
-             :around_before2, :before2,
-             :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
-             :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
-             :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
-             :after2, :around_after2,
-             :around_before3, :before3, :call3, :after3, :around_after3,
-             :around_before4, :before4,
-             :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
-             :around_before4b, :before4b, :call4b, :after4b, :around_after4b,
-             :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
-             :after4, :around_after4,
-             :around_before5, :before5, :call5, :after5, :around_after5,
-           ])
+        :around_before2, :before2,
+        :around_before2a, :before2a, :call2a, :after2a, :around_after2a,
+        :around_before2b, :before2b, :call2b, :after2b, :around_after2b,
+        :around_before2c, :before2c, :call2c, :after2c, :around_after2c,
+        :after2, :around_after2,
+        :around_before3, :before3, :call3, :after3, :around_after3,
+        :around_before4, :before4,
+        :around_before4a, :before4a, :call4a, :after4a, :around_after4a,
+        :around_before4b, :before4b, :call4b, :after4b, :around_after4b,
+        :around_before4c, :before4c, :call4c, :after4c, :around_after4c,
+        :after4, :around_after4,
+        :around_before5, :before5, :call5, :after5, :around_after5
+      ])
     end
   end
 end

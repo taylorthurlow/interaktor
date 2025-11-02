@@ -62,14 +62,16 @@ module Interaktor
   # interaktor class.
   #
   # @return [void]
-  def call; end
+  def call
+  end
 
   # Reverse prior invocation of an Interaktor instance. Any interaktor class
   # that requires undoing upon downstream failure is expected to overwrite the
   # `#rollback` instance method.
   #
   # @return [void]
-  def rollback; end
+  def rollback
+  end
 
   # Invoke an interaktor instance along with all defined hooks. The `run`
   # method is used internally by the `call` class method. After successful
@@ -105,7 +107,7 @@ module Interaktor
 
       @context.called!(self)
     end
-  rescue StandardError
+  rescue
     @context.rollback!
     raise
   end

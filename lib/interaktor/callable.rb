@@ -22,8 +22,8 @@ module Interaktor::Callable
     # @return [Array<Symbol>]
     def required_input_attributes
       @required_input_attributes ||= input_schema.info[:keys]
-                                                 .select { |_, info| info[:required] }
-                                                 .keys
+        .select { |_, info| info[:required] }
+        .keys
     end
 
     # The list of attributes which are not required to be passed in when
@@ -41,14 +41,14 @@ module Interaktor::Callable
       #
       # See https://github.com/dry-rb/dry-schema/issues/347
       @optional_input_attributes ||= begin
-          attributes_in_info = input_schema.info[:keys].keys
-          all_attributes = input_schema.key_map.keys.map(&:id)
-          optional_attributes_by_exclusion = all_attributes - attributes_in_info
+        attributes_in_info = input_schema.info[:keys].keys
+        all_attributes = input_schema.key_map.keys.map(&:id)
+        optional_attributes_by_exclusion = all_attributes - attributes_in_info
 
-          explicitly_optional_attributes = input_schema.info[:keys].reject { |_, info| info[:required] }.keys
+        explicitly_optional_attributes = input_schema.info[:keys].reject { |_, info| info[:required] }.keys
 
-          explicitly_optional_attributes + optional_attributes_by_exclusion
-        end
+        explicitly_optional_attributes + optional_attributes_by_exclusion
+      end
     end
 
     # The complete list of input attributes.
@@ -78,7 +78,7 @@ module Interaktor::Callable
       if result.errors.any?
         raise Interaktor::Error::AttributeSchemaValidationError.new(
           self,
-          result.errors.to_h,
+          result.errors.to_h
         )
       end
     end
@@ -106,8 +106,8 @@ module Interaktor::Callable
         define_method(attribute_name) { @context.send(attribute_name) }
 
         # Define setter
-        define_method("#{attribute_name}=".to_sym) do |value|
-          @context.send("#{attribute_name}=".to_sym, value)
+        define_method(:"#{attribute_name}=") do |value|
+          @context.send(:"#{attribute_name}=", value)
         end
       end
     end
@@ -141,14 +141,14 @@ module Interaktor::Callable
       #
       # See https://github.com/dry-rb/dry-schema/issues/347
       @optional_failure_attributes ||= begin
-          attributes_in_info = failure_schema.info[:keys].keys
-          all_attributes = failure_schema.key_map.keys.map(&:id)
-          optional_attributes_by_exclusion = all_attributes - attributes_in_info
+        attributes_in_info = failure_schema.info[:keys].keys
+        all_attributes = failure_schema.key_map.keys.map(&:id)
+        optional_attributes_by_exclusion = all_attributes - attributes_in_info
 
-          explicitly_optional_attributes = failure_schema.info[:keys].reject { |_, info| info[:required] }.keys
+        explicitly_optional_attributes = failure_schema.info[:keys].reject { |_, info| info[:required] }.keys
 
-          explicitly_optional_attributes + optional_attributes_by_exclusion
-        end
+        explicitly_optional_attributes + optional_attributes_by_exclusion
+      end
     end
 
     # The complete list of failure attributes.
@@ -178,7 +178,7 @@ module Interaktor::Callable
       if result.errors.any?
         raise Interaktor::Error::AttributeSchemaValidationError.new(
           self,
-          result.errors.to_h,
+          result.errors.to_h
         )
       end
     end
@@ -209,8 +209,8 @@ module Interaktor::Callable
     # @return [Array<Symbol>]
     def required_success_attributes
       @required_success_attributes ||= success_schema.info[:keys]
-                                                     .select { |_, info| info[:required] }
-                                                     .keys
+        .select { |_, info| info[:required] }
+        .keys
     end
 
     # The list of attributes which are not required to be provided when failing
@@ -228,14 +228,14 @@ module Interaktor::Callable
       #
       # See https://github.com/dry-rb/dry-schema/issues/347
       @optional_success_attributes ||= begin
-          attributes_in_info = success_schema.info[:keys].keys
-          all_attributes = success_schema.key_map.keys.map(&:id)
-          optional_attributes_by_exclusion = all_attributes - attributes_in_info
+        attributes_in_info = success_schema.info[:keys].keys
+        all_attributes = success_schema.key_map.keys.map(&:id)
+        optional_attributes_by_exclusion = all_attributes - attributes_in_info
 
-          explicitly_optional_attributes = success_schema.info[:keys].reject { |_, info| info[:required] }.keys
+        explicitly_optional_attributes = success_schema.info[:keys].reject { |_, info| info[:required] }.keys
 
-          explicitly_optional_attributes + optional_attributes_by_exclusion
-        end
+        explicitly_optional_attributes + optional_attributes_by_exclusion
+      end
     end
 
     # The complete list of success attributes.
@@ -265,7 +265,7 @@ module Interaktor::Callable
       if result.errors.any?
         raise Interaktor::Error::AttributeSchemaValidationError.new(
           self,
-          result.errors.to_h,
+          result.errors.to_h
         )
       end
     end
@@ -339,7 +339,7 @@ module Interaktor::Callable
         new(context).tap(&run_method).instance_variable_get(:@context)
       else
         raise ArgumentError,
-              "Expected a hash argument when calling the interaktor, got a #{context.class} instead."
+          "Expected a hash argument when calling the interaktor, got a #{context.class} instead."
       end
     end
   end

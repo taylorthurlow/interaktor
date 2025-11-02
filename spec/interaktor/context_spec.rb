@@ -16,7 +16,7 @@ module Interaktor
       end
 
       it "doesn't affect the original hash" do
-        hash = { foo: "bar" }
+        hash = {foo: "bar"}
         context = described_class.build(hash)
 
         expect(context).to be_a(described_class)
@@ -63,7 +63,7 @@ module Interaktor
         expect {
           begin
             context.fail!
-          rescue StandardError
+          rescue
             nil
           end
         }.to change(context, :success?).from(true).to(false)
@@ -73,7 +73,7 @@ module Interaktor
         expect {
           begin
             context.fail!
-          rescue StandardError
+          rescue
             nil
           end
         }.to change(context, :failure?).from(false).to(true)
@@ -82,14 +82,14 @@ module Interaktor
       it "preserves failure" do
         begin
           context.fail!
-        rescue StandardError
+        rescue
           nil
         end
 
         expect {
           begin
             context.fail!
-          rescue StandardError
+          rescue
             nil
           end
         }.not_to change(context, :failure?)
@@ -99,7 +99,7 @@ module Interaktor
         expect {
           begin
             context.fail!
-          rescue StandardError
+          rescue
             nil
           end
         }.not_to change(context, :foo)
@@ -109,7 +109,7 @@ module Interaktor
         expect {
           begin
             context.fail!(foo: "baz")
-          rescue StandardError
+          rescue
             nil
           end
         }.to change(context, :foo).from("bar").to("baz")
@@ -119,7 +119,7 @@ module Interaktor
         expect {
           begin
             context.fail!("foo" => "baz")
-          rescue StandardError
+          rescue
             nil
           end
         }.to change(context, :foo).from("bar").to("baz")

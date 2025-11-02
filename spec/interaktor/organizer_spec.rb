@@ -11,8 +11,8 @@ RSpec.describe Interaktor::Organizer do
       expect {
         organizer.organize(interaktor2, interaktor3)
       }.to change(organizer, :organized)
-             .from([])
-             .to([interaktor2, interaktor3])
+        .from([])
+        .to([interaktor2, interaktor3])
     end
 
     it "sets interaktors given an array of classes" do
@@ -21,8 +21,8 @@ RSpec.describe Interaktor::Organizer do
       expect {
         organizer.organize([interaktor2, interaktor3])
       }.to change(organizer, :organized)
-             .from([])
-             .to([interaktor2, interaktor3])
+        .from([])
+        .to([interaktor2, interaktor3])
     end
 
     it "allows multiple organize calls" do
@@ -33,8 +33,8 @@ RSpec.describe Interaktor::Organizer do
         organizer.organize(interaktor2, interaktor3)
         organizer.organize(interaktor4)
       }.to change(organizer, :organized)
-             .from([])
-             .to([interaktor2, interaktor3, interaktor4])
+        .from([])
+        .to([interaktor2, interaktor3, interaktor4])
     end
   end
 
@@ -225,7 +225,7 @@ RSpec.describe Interaktor::Organizer do
         an_instance_of(Interaktor::Error::OrganizerMissingPassedAttributeError)
           .and(having_attributes(
             attribute: :foo,
-            interaktor: interaktor2,
+            interaktor: interaktor2
           ))
       )
     end

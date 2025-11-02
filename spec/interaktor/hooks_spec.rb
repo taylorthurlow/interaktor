@@ -45,7 +45,7 @@ module Interaktor
           expect(hooked.process).to eq([
             :around_before,
             :process,
-            :around_after,
+            :around_after
           ])
         end
       end
@@ -65,7 +65,7 @@ module Interaktor
           expect(hooked.process).to eq([
             :around_before,
             :process,
-            :around_after,
+            :around_after
           ])
         end
       end
@@ -95,7 +95,7 @@ module Interaktor
             :around_before2,
             :process,
             :around_after2,
-            :around_after1,
+            :around_after1
           ])
         end
       end
@@ -127,7 +127,7 @@ module Interaktor
             :around_before2,
             :process,
             :around_after2,
-            :around_after1,
+            :around_after1
           ])
         end
       end
@@ -148,7 +148,7 @@ module Interaktor
         it "runs the before hook method" do
           expect(hooked.process).to eq([
             :before,
-            :process,
+            :process
           ])
         end
       end
@@ -165,7 +165,7 @@ module Interaktor
         it "runs the before hook block" do
           expect(hooked.process).to eq([
             :before,
-            :process,
+            :process
           ])
         end
       end
@@ -189,7 +189,7 @@ module Interaktor
           expect(hooked.process).to eq([
             :before1,
             :before2,
-            :process,
+            :process
           ])
         end
       end
@@ -215,7 +215,7 @@ module Interaktor
           expect(hooked.process).to eq([
             :before1,
             :before2,
-            :process,
+            :process
           ])
         end
       end
@@ -236,7 +236,7 @@ module Interaktor
         it "runs the after hook method" do
           expect(hooked.process).to eq([
             :process,
-            :after,
+            :after
           ])
         end
       end
@@ -253,7 +253,7 @@ module Interaktor
         it "runs the after hook block" do
           expect(hooked.process).to eq([
             :process,
-            :after,
+            :after
           ])
         end
       end
@@ -277,7 +277,7 @@ module Interaktor
           expect(hooked.process).to eq([
             :process,
             :after2,
-            :after1,
+            :after1
           ])
         end
       end
@@ -303,7 +303,7 @@ module Interaktor
           expect(hooked.process).to eq([
             :process,
             :after2,
-            :after1,
+            :after1
           ])
         end
       end
@@ -324,7 +324,7 @@ module Interaktor
         it "runs the after hook method" do
           expect(hooked.process).to eq([
             :process,
-            :ensure,
+            :ensure
           ])
         end
       end
@@ -341,7 +341,7 @@ module Interaktor
         it "runs the after hook block" do
           expect(hooked.process).to eq([
             :process,
-            :ensure,
+            :ensure
           ])
         end
       end
@@ -365,7 +365,7 @@ module Interaktor
           expect(hooked.process).to eq([
             :process,
             :ensure1,
-            :ensure2,
+            :ensure2
           ])
         end
       end
@@ -391,7 +391,7 @@ module Interaktor
           expect(hooked.process).to eq([
             :process,
             :ensure1,
-            :ensure2,
+            :ensure2
           ])
         end
       end
@@ -449,7 +449,7 @@ module Interaktor
             :around_after2,
             :around_after1,
             :ensure1,
-            :ensure2,
+            :ensure2
           ])
         end
       end
