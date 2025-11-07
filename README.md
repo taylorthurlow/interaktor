@@ -1,7 +1,6 @@
 # Interaktor
 
 [![Gem Version](https://img.shields.io/gem/v/interaktor.svg)](http://rubygems.org/gems/interaktor)
-[![Build Status](https://img.shields.io/travis/collectiveidea/interaktor/master.svg)](https://travis-ci.org/taylorthurlow/interaktor)
 
 **DISCLAIMER: Interaktor is considered to be stable, but has not yet reached version 1.0. Following semantic versioning, minor version updates can introduce breaking changes. Please review the changelog when updating.**
 
