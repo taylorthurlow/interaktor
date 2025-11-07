@@ -3,7 +3,7 @@
 [![Gem Version](https://img.shields.io/gem/v/interaktor.svg)](http://rubygems.org/gems/interaktor)
 [![Build Status](https://img.shields.io/travis/collectiveidea/interaktor/master.svg)](https://travis-ci.org/taylorthurlow/interaktor)
 
-**DISCLAIMER: Interaktor is under active development. Feel free to use it, but until 1.0 is released, any update could break compatibility with an older version.**
+**DISCLAIMER: Interaktor is considered to be stable, but has not yet reached version 1.0. Following semantic versioning, minor version updates can introduce breaking changes. Please review the changelog when updating.**
 
 **Interaktor** is a fork of [Interactor by collectiveidea](https://github.com/collectiveidea/interactor). While Interactor is still used by collectiveidea internally, communication and progress has been slow in adapting to pull requests and issues. This inactivity combined with my desire to dial back on the Interactor's inherent permissivity led me to fork it and create Interaktor.
 
@@ -66,7 +66,7 @@ CreateUser.call(name: "Foo Bar")
 
 Based on the outcome of the interaktor's work, we can require certain attributes. In the example below, we must succeed with a `user_id` attribute, and if we fail, we must provide an `error_messages` attribute.
 
-The use of `#success!` allows you to early-return from an interaktor's work. If no `success` attribute is provided, and the `call` method finishes execution normally, then the interaktor is considered to be in a successful state.
+The use of `#success!` allows you to early-return from an interaktor's work. If no `success` attribute is provided, and the `call` method finishes execution normally, then the interaktor is considered to to have completed successfully.
 
 ```ruby
 class CreateUser
@@ -108,7 +108,7 @@ end
 
 `#fail!` always throws an exception of type `Interaktor::Failure`.
 
-Normally, however, these exceptions are not seen. In the recommended usage, the caller invokes the interaktor using the class method `.call`, then checks the `#success?` method of the returned object. This works because the `call` class method swallows exceptions. When unit testing an interaktor, if calling custom business logic methods directly and bypassing `call`, be aware that `fail!` will generate such exceptions.
+Normally, however, these exceptions are not seen. In the recommended usage, the caller invokes the interaktor using the class method `.call`, then checks the `#success?` method of the returned object. This works because the `call` class method rescues the `Interaktor::Failure` exception. When unit testing an interaktor, if calling custom business logic methods directly and bypassing `call`, be aware that `fail!` will generate such exceptions.
 
 See _Interaktors in the controller_, below, for the recommended usage of `.call` and `#success?`.
 
@@ -295,6 +295,10 @@ class PlaceOrder
     required(:order_params).filled(:hash)
   end
 
+  success do
+    required(:order)
+  end
+
   organize CreateOrder, ChargeCard, SendThankYou
 end
 ```
@@ -322,7 +326,14 @@ class OrdersController < ApplicationController
 end
 ```
 
-The organizer passes any of its own defined attributes into first interaktor that it organizes. That first interaktor is then called and executed using those attributes. For the following interaktors in the organize list, each interaktor receives its attributes from the previous interaktor (both input attributes and success attributes). Any attributes which are _not_ accepted by the next interaktor (listed as required or optional attributes) are dropped in the transition.
+The organizer passes its own input arguments (if present) into first interaktor that it organizes, which is called and executed using those arguments. For the following interaktors in the organize list, each interaktor receives its input arguments from the previous interaktor (both input arguments and success arguments, with success arguments taking priority in the case of a name collision).
+
+Any arguments which are _not_ accepted by the next interaktor (listed as required or optional input attributes) are dropped in the transition.
+
+If the organizer specifies any success attributes, the final interaktor in the
+organized list must also specify those success attributes. In general, it is
+recommended to avoid using success attributes on an organizer in the first
+place, to avoid coupling between the organizer and the interaktors it organizes.
 
 #### Rollback
 
