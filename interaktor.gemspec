@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.homepage = "https://github.com/taylorthurlow/interaktor"
   spec.license = "MIT"
   spec.files = `git ls-files`.split
-  spec.required_ruby_version = ">= 2.5"
+  spec.required_ruby_version = ">= 3.0"
   spec.require_path = "lib"
 
   spec.add_runtime_dependency "dry-schema", "~> 1.0"
