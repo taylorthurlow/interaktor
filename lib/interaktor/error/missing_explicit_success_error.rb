@@ -1,5 +1,10 @@
-class Interaktor::Error::MissingExplicitSuccessError < Interaktor::Error::AttributeError
+class Interaktor::Error::MissingExplicitSuccessError < Interaktor::Error::Base
   def message
-    "#{interaktor} interaktor execution finished successfully but requires one or more success parameters to have been provided: #{attributes.join(", ")}"
+    <<~MSG.gsub(/\s+/, " ")
+      #{interaktor} interaktor execution finished successfully, but the
+      interaktor definition includes a `success` attribute definition, and as a
+      result the interaktor must call the `success!` method with the appropriate
+      attributes.
+    MSG
   end
 end

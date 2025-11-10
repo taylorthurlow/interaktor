@@ -12,10 +12,10 @@ class Interaktor::Error::OrganizerMissingPassedAttributeError < Interaktor::Erro
 
   def message
     <<~MESSAGE.strip.tr("\n", " ")
-      An organized #{interaktor} interaktor requires a '#{attribute}' input
+      An organized #{interaktor} interaktor defines a '#{attribute}' input
       attribute, but none of the interaktors that come before it in the
-      organizer list it as a success attribute, and the organizer does not list
-      it as a required attribute.
+      organizer list it as a success attribute, and the organizer does not
+      define it as an input attribute.
     MESSAGE
   end
 end

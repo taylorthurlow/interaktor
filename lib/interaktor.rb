@@ -15,9 +15,7 @@ module Interaktor
       include Hooks
       include Callable
 
-      interaction_class = Class.new(Interaktor::Interaction) do
-      end
-
+      interaction_class = Class.new(Interaktor::Interaction)
       base.const_set(:Interaction, interaction_class)
     end
   end
@@ -33,21 +31,21 @@ module Interaktor
 
   # @param args [Hash{Symbol=>Object}]
   def fail!(args = {})
-    if (disallowed_key = args.keys.find { |k| !self.class.failure_attributes.include?(k.to_sym) })
-      raise Interaktor::Error::UnknownAttributeError.new(self, disallowed_key)
-    end
+    # TODO
+    # if (disallowed_key = args.keys.find { |k| !self.class.failure_attributes.include?(k.to_sym) })
+    #   raise Interaktor::Error::UnknownAttributeError.new(self, disallowed_key)
+    # end
 
-    self.class.validate_failure_schema(args)
     @interaction.fail!(args)
   end
 
   # @param args [Hash]
   def success!(args = {})
-    if (disallowed_key = args.keys.find { |k| !self.class.success_attributes.include?(k.to_sym) })
-      raise Interaktor::Error::UnknownAttributeError.new(self, disallowed_key)
-    end
+    # TODO
+    # if (disallowed_key = args.keys.find { |k| !self.class.success_attributes.include?(k.to_sym) })
+    #   raise Interaktor::Error::UnknownAttributeError.new(self, disallowed_key)
+    # end
 
-    self.class.validate_success_schema(args)
     @interaction.success!(args)
   end
 
@@ -85,10 +83,6 @@ module Interaktor
     with_hooks do
       catch(:early_return) do
         call
-      end
-
-      if self.class.required_success_attributes.any? && !@interaction.success_args
-        raise Interaktor::Error::MissingExplicitSuccessError.new(self, self.class.required_success_attributes)
       end
 
       @interaction.called!(self)

@@ -1,6 +1,15 @@
+require "active_model"
+
 module Interaktor
   class Interaction
-    attr_reader :input_args, :success_args, :failure_args
+    # @return [InputAttributesModel, nil]
+    attr_reader :input_object
+
+    # @return [SuccessAttributesModel, nil]
+    attr_reader :success_object
+
+    # @return [FailureAttributesModel, nil]
+    attr_reader :failure_object
 
     # @param interaktor [Interaktor]
     # @param input [Hash, Interaction]
@@ -10,16 +19,40 @@ module Interaktor
       @failed = false
       @rolled_back = false
 
-      @input_args = case input
-      when Hash
-        input.transform_keys(&:to_sym)
-      when Interaction
-        input
-          .input_args
-          .merge(input.success_args || {})
-          .slice(*(interaktor.class.input_attributes || []))
-      else
-        raise ArgumentError, "Invalid input type: #{input.class}"
+      @input_object = if defined?(interaktor.class::InputAttributesModel)
+        result = interaktor.class::InputAttributesModel.new
+
+        case input
+        when Hash
+          input.each do |k, v|
+            result.send("#{k}=", v)
+          rescue NoMethodError => e
+            if e.receiver == result
+              raise Interaktor::Error::UnknownAttributeError.new(interaktor, k.to_sym)
+            else
+              raise e
+            end
+          end
+        when Interaction
+          (input.input_object&.attributes || {})
+            .merge(input.success_object&.attributes || {})
+            .slice(*result.attribute_names)
+            .transform_keys(&:to_sym)
+            .each { |k, v| result.send("#{k}=", v) }
+        else
+          raise ArgumentError, "Invalid input type: #{input.class}"
+        end
+
+        if !result.valid?
+          raise Interaktor::Error::AttributeValidationError.new(@interaktor, result)
+        end
+
+        result
+      elsif input.is_a?(Hash) && !input.empty?
+        raise Interaktor::Error::UnknownAttributeError.new(
+          interaktor,
+          input.keys.first.to_sym
+        )
       end
     end
 
@@ -60,7 +93,23 @@ module Interaktor
 
       @executed = true
       @failed = true
-      @failure_args = args.transform_keys(&:to_sym)
+
+      if defined?(@interaktor.class::FailureAttributesModel)
+        @failure_object = @interaktor.class::FailureAttributesModel.new.tap do |obj|
+          args.each do |k, v|
+            obj.send("#{k}=", v)
+          rescue NoMethodError
+            raise Interaktor::Error::UnknownAttributeError.new(@interaktor, k.to_sym)
+          end
+
+          if !obj.valid?
+            raise Interaktor::Error::AttributeValidationError.new(@interaktor, obj)
+          end
+        end
+      elsif args.any?
+        raise Interaktor::Error::UnknownAttributeError.new(@interaktor, args.keys.first.to_sym)
+      end
+
       raise Interaktor::Failure, self
     end
 
@@ -74,16 +123,24 @@ module Interaktor
       end
 
       @executed = true
-      @success_args = args.transform_keys(&:to_sym)
+
+      if defined?(@interaktor.class::SuccessAttributesModel)
+        @success_object = @interaktor.class::SuccessAttributesModel.new.tap do |obj|
+          args.each do |k, v|
+            obj.send("#{k}=", v)
+          rescue NoMethodError
+            raise Interaktor::Error::UnknownAttributeError.new(@interaktor, k.to_sym)
+          end
+
+          if !obj.valid?
+            raise Interaktor::Error::AttributeValidationError.new(@interaktor, obj)
+          end
+        end
+      elsif args.any?
+        raise Interaktor::Error::UnknownAttributeError.new(@interaktor, args.keys.first.to_sym)
+      end
+
       early_return!
-    end
-
-    def allowable_success_attributes
-      @interaktor.class.success_attributes
-    end
-
-    def allowable_failure_attributes
-      @interaktor.class.failure_attributes
     end
 
     # Only allow access to arguments when appropriate. Input arguments should be
@@ -91,21 +148,21 @@ module Interaktor
     # execution is complete, either the success or failure arguments should be
     # accessible, depending on the outcome.
     def method_missing(method_name, *args, &block)
-      if !@executed && @interaktor.class.input_attributes.include?(method_name)
-        input_args[method_name]
-      elsif @executed && success? && allowable_success_attributes.include?(method_name)
-        success_args[method_name]
-      elsif @executed && failure? && allowable_failure_attributes.include?(method_name)
-        failure_args[method_name]
+      if !@executed && input_object && input_object.attribute_names.map(&:to_sym).include?(method_name)
+        input_object.send(method_name)
+      elsif @executed && success? && success_object && success_object.attribute_names.map(&:to_sym).include?(method_name)
+        success_object.send(method_name)
+      elsif @executed && failure? && failure_object && failure_object.attribute_names.map(&:to_sym).include?(method_name)
+        failure_object.send(method_name)
       else
         super
       end
     end
 
     def respond_to_missing?(method_name, include_private = false)
-      input_args.key?(method_name) ||
-        success_args&.key?(method_name) ||
-        failure_args&.key?(method_name) ||
+      (input_object && input_object.attribute_names.map(&:to_sym).include?(method_name)) ||
+        (success_object && success_object.attribute_names.map(&:to_sym).include?(method_name)) ||
+        (failure_object && failure_object.attribute_names.map(&:to_sym).include?(method_name)) ||
         super
     end
 

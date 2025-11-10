@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = ">= 3.0"
   spec.require_path = "lib"
 
-  spec.add_runtime_dependency "dry-schema", "~> 1.0"
+  spec.add_runtime_dependency "activemodel"
   spec.add_runtime_dependency "zeitwerk", ">= 2"
 
   spec.add_development_dependency "rake", "~> 13.0"

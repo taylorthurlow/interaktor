@@ -39,7 +39,11 @@ module Interaktor::Organizer
     #
     # @return [void]
     def call
-      check_attribute_flow_valid
+      # TODO: Not sure how to achieve this with ActiveModel not making it easy
+      # to determine if a given attribute can be nil or not (is it required or
+      # not?) - easy to do at the time of interaction start, but not in advance
+      # like this
+      # check_attribute_flow_valid
 
       latest_interaction = nil
 
@@ -49,39 +53,14 @@ module Interaktor::Organizer
         end
       end
 
-      if latest_interaction
-        @interaction.instance_variable_set(:@success_args, latest_interaction.success_args)
-      end
-    end
-
-    private
-
-    # @return [void]
-    def check_attribute_flow_valid
-      interaktors = self.class.organized
-
-      # @type [Array<Symbol>]
-      success_attributes_so_far = []
-
-      success_attributes_so_far += self.class.required_input_attributes
-
-      # @param interaktor [Class]
-      interaktors.each do |interaktor|
-        interaktor.required_input_attributes.each do |required_attr|
-          unless success_attributes_so_far.include?(required_attr)
-            raise Interaktor::Error::OrganizerMissingPassedAttributeError.new(interaktor, required_attr)
-          end
-        end
-
-        success_attributes_so_far += interaktor.success_attributes
-
-        next unless interaktor == interaktors.last
-
-        self.class.success_attributes.each do |success_attr|
-          unless success_attributes_so_far.include?(success_attr)
-            raise Interaktor::Error::OrganizerSuccessAttributeMissingError.new(interaktor, success_attr)
-          end
-        end
+      if defined?(self.class::SuccessAttributesModel)
+        @interaction.success!(
+          latest_interaction
+            .success_object
+            &.attributes
+            &.slice(*self.class::SuccessAttributesModel.attribute_names)
+            &.transform_keys(&:to_sym) || {}
+        )
       end
     end
   end

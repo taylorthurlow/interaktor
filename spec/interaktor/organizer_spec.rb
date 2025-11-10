@@ -49,13 +49,13 @@ RSpec.describe Interaktor::Organizer do
   describe "#call" do
     it "calls each interaktor in order" do
       organizer = FakeInteraktor.build_interaktor(type: described_class) do
-        input { required(:foo) }
-        success { required(:baz) }
+        input { attribute :foo }
+        success { attribute :baz }
       end
 
       interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
-        input { required(:foo) }
-        success { required(:bar) }
+        input { attribute :foo }
+        success { attribute :bar }
 
         def call
           success!(bar: "whatever")
@@ -63,8 +63,8 @@ RSpec.describe Interaktor::Organizer do
       end
 
       interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
-        input { required(:bar) }
-        success { required(:baz) }
+        input { attribute :bar }
+        success { attribute :baz }
 
         def call
           success!(baz: "whatever")
@@ -83,12 +83,12 @@ RSpec.describe Interaktor::Organizer do
 
     it "allows an interaktor to accept input attributes from an organizer" do
       organizer = FakeInteraktor.build_interaktor(type: described_class) do
-        input { required(:foo) }
+        input { attribute :foo }
       end
 
       interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
-        input { required(:foo) }
-        success { required(:bar) }
+        input { attribute :foo }
+        success { attribute :bar }
 
         def call
           success!(bar: "baz")
@@ -96,7 +96,7 @@ RSpec.describe Interaktor::Organizer do
       end
 
       interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
-        input { required(:bar) }
+        input { attribute :bar }
 
         def call
         end
@@ -111,11 +111,11 @@ RSpec.describe Interaktor::Organizer do
     end
 
     it "allows an interaktor to accept input attributes from the previous organized interaktor's input attributes" do
-      organizer = FakeInteraktor.build_interaktor(type: described_class) { input { required(:foo) } }
-      interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") { input { required(:foo) } }
+      organizer = FakeInteraktor.build_interaktor(type: described_class) { input { attribute :foo } }
+      interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") { input { attribute :foo } }
       interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
-        input { required(:foo) }
-        success { required(:bar) }
+        input { attribute :foo }
+        success { attribute :bar }
 
         def call
           success!(bar: foo)
@@ -131,11 +131,11 @@ RSpec.describe Interaktor::Organizer do
     end
 
     it "allows an interaktor to accept input attributes from the previous organized interaktor's success attributes" do
-      organizer = FakeInteraktor.build_interaktor(type: described_class) { input { required(:foo) } }
+      organizer = FakeInteraktor.build_interaktor(type: described_class) { input { attribute :foo } }
 
       interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
-        input { required(:foo) }
-        success { required(:bar) }
+        input { attribute :foo }
+        success { attribute :bar }
 
         def call
           success!(bar: foo)
@@ -143,8 +143,8 @@ RSpec.describe Interaktor::Organizer do
       end
 
       interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
-        input { required(:bar) }
-        success { required(:baz) }
+        input { attribute :bar }
+        success { attribute :baz }
 
         def call
           success!(baz: bar)
@@ -159,59 +159,68 @@ RSpec.describe Interaktor::Organizer do
       organizer.call(foo: "whatever")
     end
 
-    it "raises an exception if an interaktor requires an input attribute not provided by the organizer" do
+    it "raises an exception if an interaktor cannot receive input attribute from the organizer" do
       organizer = FakeInteraktor.build_interaktor(type: described_class)
-      interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") { input { required(:foo) } }
+      interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+        input do
+          attribute :foo
+          validates :foo, presence: true
+        end
+      end
 
       allow(organizer).to receive(:organized).and_return([interaktor1])
 
-      expect(interaktor1).not_to receive(:call!)
-
       expect {
         organizer.call
-      }.to raise_error(
-        an_instance_of(Interaktor::Error::OrganizerMissingPassedAttributeError)
-          .and(having_attributes(
-            attribute: :foo,
-            interaktor: interaktor1
-          ))
-      )
+      }.to raise_error do |error|
+        expect(error).to be_an Interaktor::Error::AttributeValidationError
+        expect(error.validation_errors).to eq(
+          foo: ["can't be blank"]
+        )
+      end
     end
 
-    it "raises an exception if an interaktor requires an input attribute not provided by the previous interaktor" do
+    it "raises an exception if an interaktor cannot receive input attribute from the previous interaktor" do
       organizer = FakeInteraktor.build_interaktor(type: described_class)
       interaktor1 = FakeInteraktor.build_interaktor("Interaktor1")
-      interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") { input { required(:foo) } }
+      interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
+        input do
+          attribute :foo
+          validates :foo, presence: true
+        end
+      end
 
       allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2])
 
-      expect(interaktor2).not_to receive(:call!)
-
       expect {
         organizer.call
-      }.to raise_error(
-        an_instance_of(Interaktor::Error::OrganizerMissingPassedAttributeError)
-          .and(having_attributes(
-            attribute: :foo,
-            interaktor: interaktor2
-          ))
-      )
+      }.to raise_error do |error|
+        expect(error).to be_an Interaktor::Error::AttributeValidationError
+        expect(error.validation_errors).to eq(
+          foo: ["can't be blank"]
+        )
+      end
     end
 
     it "raises an exception if the organizer's last interaktor does not include the organizer's success attributes" do
-      organizer = FakeInteraktor.build_interaktor(type: described_class) { success { required(:final) } }
+      organizer = FakeInteraktor.build_interaktor(type: described_class) do
+        success do
+          attribute :final
+          validates :final, presence: true
+        end
+      end
       interaktor1 = FakeInteraktor.build_interaktor("Interaktor1")
 
       allow(organizer).to receive(:organized).and_return([interaktor1])
 
-      expect(interaktor1).not_to receive(:call!)
-
       expect {
         organizer.call
-      }.to raise_error(
-        an_instance_of(Interaktor::Error::OrganizerSuccessAttributeMissingError)
-          .and(having_attributes(attribute: :final, interaktor: interaktor1))
-      )
+      }.to raise_error do |error|
+        expect(error).to be_an Interaktor::Error::AttributeValidationError
+        expect(error.validation_errors).to eq(
+          final: ["can't be blank"]
+        )
+      end
     end
   end
 end
