@@ -91,11 +91,11 @@ module Interaktor
     # execution is complete, either the success or failure arguments should be
     # accessible, depending on the outcome.
     def method_missing(method_name, *args, &block)
-      if !@executed && input_args.key?(method_name)
+      if !@executed && @interaktor.class.input_attributes.include?(method_name)
         input_args[method_name]
-      elsif success? && allowable_success_attributes.include?(method_name)
+      elsif @executed && success? && allowable_success_attributes.include?(method_name)
         success_args[method_name]
-      elsif failure? && allowable_failure_attributes.include?(method_name)
+      elsif @executed && failure? && allowable_failure_attributes.include?(method_name)
         failure_args[method_name]
       else
         super
