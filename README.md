@@ -8,10 +8,10 @@
 
 Fundamentally, Interaktor is the same as Interactor, but with the following changes:
 
-- Required explicit definition of interaktor "attributes" which replaces the concept of the interaktor context. Attributes are defined using a schema DSL provided by [dry-schema](https://github.com/dry-rb/dry-schema), which allows for complex validation, if desired.
+- Explicit definition of interaktor "attributes" which replaces the concept of the interaktor context. Attributes are defined using the DSL provided by [ActiveModel](https://rubygems.org/gems/activemodel), which allows for complex validation, if desired. This is the same DSL used internally by ActiveRecord, so you will be familiar with validations if you have experience with ActiveRecord.
 - The interaktor "context" is no longer a public-facing concept, all data/attribute accessors/setters are defined as attributes
 - Attributes passed to `#fail!` must be defined in advance
-- Interaktors support early-exit functionality through the use of `#success!`, which functions the same as `#fail!` in that you must define the required success attributes on the interaktor
+- Interaktors support early-exit functionality through the use of `#success!`, which functions the same as `#fail!` in that you must define the success attributes on the interaktor
 
 ## Getting started
 
@@ -29,21 +29,44 @@ Interaktors are used to encapsulate your application's [business logic](http://e
 
 ### Attributes
 
+Attributes are defined using the DSL provided by ActiveModel, whose documentation can be found [here](https://api.rubyonrails.org/classes/ActiveModel/Attributes.html). The same DSL is used to define _input_ attributes, _success_ attributes, and _failure_ attributes.
+
+The aforementioned documentation provides a reasonably comprehensive overview of the DSL is used. But generally a definition block looks like this:
+
+```ruby
+attribute :name, :string
+attribute :email, :string
+attribute :date_of_birth
+
+validates :name, presence: true
+validates :email, presence: true, allow_nil: true
+validates :date_of_birth, presence: true
+```
+
+Defining an attribute requires a name, and optionally a type. The available types are not currently well documented, but can be found clearly in the source code of ActiveModel. At the time of writing (activemodel `8.1.1`), the following types are available: `big_integer`, `binary`, `boolean`, `date`, `datetime`, `decimal`, `float`, `immutable_string`, `integer`, `string`, and `time`.
+
+Defining a type will allow ActiveModel to perform type-specific validation and coercion. This means that when a value is assigned to an attribute, ActiveModel will attempt to convert it to the specified type, and raise an error if the conversion is not possible.
+
+The type argument can also be a class constant, but that class will need to define certain methods that ActiveModel relies on in order to work properly - the errors raised by ActiveModel should illustrate which methods are required.
+
+Validations should look familiar to Rails developers. They are defined using the `validates` method, which takes a hash of options. The options are the same as those used in Rails, so you can refer to the Rails documentation for more information.
+
+In general, it is recommended to be careful with validations. These are not database records - they are simply a way to ensure that the data passed into an interaktor is valid and consistent before it is processed. Consider thinking twice before adding validations more complicated than typical `nil`/`blank?` checks.
+
 #### Input attributes
 
-Depending on its definition, an interaktor may require attributes to be passed in when it is invoked. These attributes contain everything the interaktor needs to do its work.
-
-Attributes are defined using a schema DSL provided by the [dry-schema](https://github.com/dry-rb/dry-schema) gem. It allows the construction of schemas for validating attributes. The schema is typically provided as a block argument to the `input` class method as seen below.
-
-This example is an extremely simple case, and dry-schema supports highly complex schema validation, like type checking, nested hash data validation, and more. For more information on defining an attribute schema, please see the [dry-schema documentation website](https://dry-rb.org/gems/dry-schema). This link should take you to the latest version of dry-schema, but be sure to check that the version of dry-schema in your application bundle matches the documentation you are viewing.
+Input attributes are attributes that are passed into an interaktor when it is invoked. The following interaktor defines a required `name` attribute and an optional `email` attribute.
 
 ```ruby
 class CreateUser
   include Interaktor
 
   input do
-    required(:name)
-    optional(:email)
+    attribute :name, :string
+    attribute :email, :string
+
+    validates :name, presence: true
+    validates :email, presence: true, allow_nil: true
   end
 
   def call
@@ -54,33 +77,37 @@ class CreateUser
   end
 end
 
-CreateUser.call(name: "Foo Bar")
+CreateUser.call!(name: "Foo Bar")
 ```
 
-`input` will also accept a `Dry::Schema::Params` object directly, if for some reason the schema needs to be constructed elsewhere.
+#### Success and failure attributes
 
-**A note about type checking**: Type checking is cool, but Ruby is a dynamic language, and Ruby developers tend to utilize the idea of [duck typing](https://en.wikipedia.org/wiki/Duck_typing). Forcing the attributes of an interaktor to be of a certain type in order to validate might sound like a good idea, but it can often cause problems in situations where you might like to use duck typing, for example, when using stubs in tests.
+Based on the outcome of the interaktor's work, we can define attributes to be provided.
 
-#### Output attributes
+The use of `#success!` allows you to early return from an interaktor's work. If no `success` attributes are defined, and the `call` method finishes execution normally, then the interaktor is considered to to have completed successfully. Conversely, if `success` attributes are defined, and the `call` method finishes execution normally (i.e. without a raised error, and without calling `success!`), then an exception will be raised.
 
-Based on the outcome of the interaktor's work, we can require certain attributes. In the example below, we must succeed with a `user_id` attribute, and if we fail, we must provide an `error_messages` attribute.
-
-The use of `#success!` allows you to early-return from an interaktor's work. If no `success` attribute is provided, and the `call` method finishes execution normally, then the interaktor is considered to to have completed successfully.
+In the example below, we must succeed with a `user_id` attribute, and if we fail, we must provide an `error_messages` attribute.
 
 ```ruby
 class CreateUser
   include Interaktor
 
   input do
-    required(:name).filled(:string)
+    attribute :name, :string
+
+    validates :name, presence: true
   end
 
   success do
-    required(:user_id).value(:integer)
+    attribute :user_id, :integer
+
+    validates :user_id, presence: true
   end
 
   failure do
-    required(:error_messages).value(array[:string])
+    attribute :error_messages # string array
+
+    validates :error_messages, presence: true
   end
 
   def call
@@ -102,6 +129,8 @@ else
   puts "Creating the user failed: #{result.error_messages.join(", ")}".
 end
 ```
+
+The returned object is an instance of `Interaktor::Interaction`. Depending on whether the interaction was successful or not, the object will have different attributes and methods available. These methods are determined by the success and failure attributes defined on the interaktor. It is not possible to access input attributes on the Interaction object.
 
 #### Dealing with failure
 
@@ -253,29 +282,13 @@ There are two kinds of interaktors built into the Interaktor library: basic inte
 A basic interaktor is a class that includes `Interaktor` and defines `call`.
 
 ```ruby
-class AuthenticateUser
+class PrintAThing
   include Interaktor
 
-  input do
-    required(:email).filled(:string)
-    required(:password).filled(:string)
-  end
-
-  success do
-    required(:user)
-    required(:token).filled(:string)
-  end
-
-  failure do
-    required(:message).filled(:string)
-  end
+  input { attribute :name }
 
   def call
-    if user = User.authenticate(email, password)
-      success!(user: user, token: user.secret_token)
-    else
-      fail!(message: "authenticate_user.failure")
-    end
+    puts name
   end
 end
 ```
@@ -284,18 +297,16 @@ Basic interaktors are the building blocks. They are your application's single-pu
 
 ### Organizers
 
-An organizer is an important variation on the basic interaktor. Its single purpose is to run _other_ interaktors.
+An organizer is a variation on the basic interaktor. Its single purpose is to run _other_ interaktors.
 
 ```ruby
-class PlaceOrder
+class DoSomeThingsInOrder
   include Interaktor::Organizer
 
   input do
-    required(:order_params).filled(:hash)
-  end
+    attribute :name, :string
 
-  success do
-    required(:order)
+    validates :name, presence: true
   end
 
   organize CreateOrder, ChargeCard, SendThankYou
@@ -325,14 +336,12 @@ class OrdersController < ApplicationController
 end
 ```
 
-The organizer passes its own input arguments (if present) into first interaktor that it organizes, which is called and executed using those arguments. For the following interaktors in the organize list, each interaktor receives its input arguments from the previous interaktor (both input arguments and success arguments, with success arguments taking priority in the case of a name collision).
+The organizer passes its own input arguments (if present) into first interaktor that it organizes (in the above example, `CreateOrder`), which is called and executed using those arguments. For the following interaktors in the organize list, each interaktor receives its input arguments from the previous interaktor (both input arguments and success arguments, with success arguments taking priority in the case of a name collision).
 
-Any arguments which are _not_ accepted by the next interaktor (listed as required or optional input attributes) are dropped in the transition.
+Any arguments which are _not_ accepted by the next interaktor (listed as an input attribute) are dropped in the transition.
 
 If the organizer specifies any success attributes, the final interaktor in the
-organized list must also specify those success attributes. In general, it is
-recommended to avoid using success attributes on an organizer in the first
-place, to avoid coupling between the organizer and the interaktors it organizes.
+organized list must also specify those success attributes.
 
 #### Rollback
 
@@ -345,11 +354,15 @@ class CreateOrder
   include Interaktor
 
   input do
-    required(:order_params).filled(:hash)
+    attribute :order_params
+
+    validates :order_params, presence: true
   end
 
   success do
-    required(:order)
+    attribute :order
+
+    validates :order, presence: true
   end
 
   def call
@@ -379,17 +392,25 @@ class AuthenticateUser
   include Interaktor
 
   input do
-    required(:email).filled(:string)
-    required(:password).filled(:string)
+    attribute :email, :string
+    attribute :password, :string
+
+    validates :email, presence: true
+    validates :password, presence: true
   end
 
   success do
-    required(:user)
-    required(:token).filled(:string)
+    attribute :user
+    attribute :token, :string
+
+    validates :user, presence: true
+    validates :token, presence: true
   end
 
   failure do
-    required(:message).filled(:string)
+    attribute :message
+
+    validates :message, presence: true
   end
 
   def call
@@ -421,11 +442,11 @@ describe AuthenticateUser do
       end
 
       it "provides the user" do
-        expect(result.user).to eq(user)
+        expect(result.user).to eq user
       end
 
       it "provides the user's secret token" do
-        expect(result.token).to eq("token")
+        expect(result.token).to eq "token"
       end
     end
 
@@ -456,18 +477,7 @@ It's a good idea to define your own interfaces to your models. Doing so makes it
 class AuthenticateUser
   include Interaktor
 
-  input do
-    required(:email).filled(:string)
-    required(:password).filled(:string)
-  end
-
-  success do
-    required(:user)
-  end
-
-  failure do
-    required(:message).filled(:string)
-  end
+  # ...
 
   def call
     user = User.find_by(email: email)
