@@ -222,6 +222,15 @@ RSpec.shared_examples "lint" do |interaktor_class|
         end
       }.to raise_error(ArgumentError, /disallowed attribute name/i)
     end
+
+    it "raises an exception when input block is provided more than once" do
+      expect {
+        FakeInteraktor.build_interaktor(type: interaktor_class) do
+          input { attribute :foo }
+          input { attribute :bar }
+        end
+      }.to raise_error "Input block already defined"
+    end
   end
 
   describe "success attributes" do
@@ -374,6 +383,15 @@ RSpec.shared_examples "lint" do |interaktor_class|
         end
       }.to raise_error(ArgumentError, /disallowed attribute name/i)
     end
+
+    it "raises an exception when success block is provided more than once" do
+      expect {
+        FakeInteraktor.build_interaktor(type: interaktor_class) do
+          success { attribute :foo }
+          success { attribute :bar }
+        end
+      }.to raise_error "Success block already defined"
+    end
   end
 
   describe "failure attributes" do
@@ -512,6 +530,15 @@ RSpec.shared_examples "lint" do |interaktor_class|
           failure { attribute :errors }
         end
       }.to raise_error(ArgumentError, /disallowed attribute name/i)
+    end
+
+    it "raises an exception when failure block is provided more than once" do
+      expect {
+        FakeInteraktor.build_interaktor(type: interaktor_class) do
+          failure { attribute :foo }
+          failure { attribute :bar }
+        end
+      }.to raise_error "Failure block already defined"
     end
   end
 end

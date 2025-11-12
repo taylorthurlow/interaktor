@@ -11,12 +11,13 @@ module Interaktor::Callable
 
   module ClassMethods
     def input(&block)
+      raise "Input block already defined" if defined?(self::InputAttributesModel)
+
       # Define self::InputAttributesModel
       Class.new(Interaktor::Attributes, &block).tap do |klass|
         klass.define_singleton_method(:inspect) { name.to_s }
         klass.define_singleton_method(:to_s) { inspect }
 
-        # TODO: Check if defined already
         const_set(:InputAttributesModel, klass)
 
         klass.check_for_disallowed_attribute_names!
@@ -28,12 +29,13 @@ module Interaktor::Callable
     end
 
     def failure(&block)
+      raise "Failure block already defined" if defined?(self::FailureAttributesModel)
+
       # Define self::FailureAttributesModel
       Class.new(Interaktor::Attributes, &block).tap do |klass|
         klass.define_singleton_method(:inspect) { name.to_s }
         klass.define_singleton_method(:to_s) { inspect }
 
-        # TODO: Check if defined already
         const_set(:FailureAttributesModel, klass)
 
         klass.check_for_disallowed_attribute_names!
@@ -41,12 +43,13 @@ module Interaktor::Callable
     end
 
     def success(&block)
+      raise "Success block already defined" if defined?(self::SuccessAttributesModel)
+
       # Define self::SuccessAttributesModel
       Class.new(Interaktor::Attributes, &block).tap do |klass|
         klass.define_singleton_method(:inspect) { name.to_s }
         klass.define_singleton_method(:to_s) { inspect }
 
-        # TODO: Check if defined already
         const_set(:SuccessAttributesModel, klass)
 
         klass.check_for_disallowed_attribute_names!
