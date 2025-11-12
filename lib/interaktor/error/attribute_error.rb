@@ -1,9 +1,9 @@
 class Interaktor::Error::AttributeError < Interaktor::Error::Base
-  # @return [Array<Symbol>]
+  # @return [Array<String>]
   attr_reader :attributes
 
   # @param interaktor [Class]
-  # @param attributes [Array<Symbol>]
+  # @param attributes [Array<String>]
   def initialize(interaktor, attributes)
     super(interaktor)
 

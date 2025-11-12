@@ -52,8 +52,7 @@ module Interaktor::Organizer
           latest_interaction
             .success_object
             &.attributes
-            &.slice(*self.class::SuccessAttributesModel.attribute_names)
-            &.transform_keys(&:to_sym) || {}
+            &.slice(*self.class::SuccessAttributesModel.attribute_names) || {}
         )
       end
     end

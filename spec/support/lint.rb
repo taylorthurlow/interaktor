@@ -172,7 +172,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
         interaktor.call!(foo: "baz", bar: "unexpected")
       }.to raise_error do |error|
         expect(error).to be_an Interaktor::Error::UnknownAttributeError
-        expect(error.attribute).to eq :bar
+        expect(error.attribute).to eq "bar"
       end
     end
 
@@ -284,7 +284,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
         interaktor.call
       }.to raise_error do |error|
         expect(error).to be_an Interaktor::Error::UnknownAttributeError
-        expect(error.attribute).to eq :baz
+        expect(error.attribute).to eq "baz"
       end
     end
 
@@ -342,7 +342,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
         interaktor.call
       }.to raise_error do |error|
         expect(error).to be_a Interaktor::Error::UnknownAttributeError
-        expect(error.attribute).to eq :foo
+        expect(error.attribute).to eq "foo"
       end
     end
 
@@ -445,7 +445,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
         interaktor.call
       }.to raise_error do |error|
         expect(error).to be_an Interaktor::Error::UnknownAttributeError
-        expect(error.attribute).to eq :baz
+        expect(error.attribute).to eq "baz"
       end
     end
 
@@ -472,7 +472,7 @@ RSpec.shared_examples "lint" do |interaktor_class|
         interaktor.call
       }.to raise_error do |error|
         expect(error).to be_a Interaktor::Error::UnknownAttributeError
-        expect(error.attribute).to eq :foo
+        expect(error.attribute).to eq "foo"
       end
     end
 

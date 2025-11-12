@@ -1,13 +1,13 @@
 class Interaktor::Error::OrganizerMissingPassedAttributeError < Interaktor::Error::AttributeError
-  # @return [Symbol]
+  # @return [String]
   attr_reader :attribute
 
   # @param next_interaktor [Class]
-  # @param attribute [Symbol]
+  # @param attribute [Symbol, String]
   def initialize(interaktor, attribute)
-    super(interaktor, [attribute])
+    super(interaktor, [attribute.to_s])
 
-    @attribute = attribute
+    @attribute = attribute.to_s
   end
 
   def message

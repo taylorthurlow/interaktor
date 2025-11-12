@@ -28,7 +28,7 @@ module Interaktor
             result.send("#{k}=", v)
           rescue NoMethodError => e
             if e.receiver == result
-              raise Interaktor::Error::UnknownAttributeError.new(interaktor, k.to_sym)
+              raise Interaktor::Error::UnknownAttributeError.new(interaktor, k)
             else
               raise e
             end
@@ -37,7 +37,6 @@ module Interaktor
           (input.input_object&.attributes || {})
             .merge(input.success_object&.attributes || {})
             .slice(*result.attribute_names)
-            .transform_keys(&:to_sym)
             .each { |k, v| result.send("#{k}=", v) }
         else
           raise ArgumentError, "Invalid input type: #{input.class}"
@@ -49,10 +48,7 @@ module Interaktor
 
         result
       elsif input.is_a?(Hash) && !input.empty?
-        raise Interaktor::Error::UnknownAttributeError.new(
-          interaktor,
-          input.keys.first.to_sym
-        )
+        raise Interaktor::Error::UnknownAttributeError.new(interaktor, input.keys.first)
       end
     end
 
@@ -99,7 +95,7 @@ module Interaktor
           args.each do |k, v|
             obj.send("#{k}=", v)
           rescue NoMethodError
-            raise Interaktor::Error::UnknownAttributeError.new(@interaktor, k.to_sym)
+            raise Interaktor::Error::UnknownAttributeError.new(@interaktor, k)
           end
 
           if !obj.valid?
@@ -107,7 +103,7 @@ module Interaktor
           end
         end
       elsif args.any?
-        raise Interaktor::Error::UnknownAttributeError.new(@interaktor, args.keys.first.to_sym)
+        raise Interaktor::Error::UnknownAttributeError.new(@interaktor, args.keys.first)
       end
 
       raise Interaktor::Failure, self
@@ -129,7 +125,7 @@ module Interaktor
           args.each do |k, v|
             obj.send("#{k}=", v)
           rescue NoMethodError
-            raise Interaktor::Error::UnknownAttributeError.new(@interaktor, k.to_sym)
+            raise Interaktor::Error::UnknownAttributeError.new(@interaktor, k)
           end
 
           if !obj.valid?
@@ -137,7 +133,7 @@ module Interaktor
           end
         end
       elsif args.any?
-        raise Interaktor::Error::UnknownAttributeError.new(@interaktor, args.keys.first.to_sym)
+        raise Interaktor::Error::UnknownAttributeError.new(@interaktor, args.keys.first)
       end
 
       early_return!
@@ -148,21 +144,22 @@ module Interaktor
     # execution is complete, either the success or failure arguments should be
     # accessible, depending on the outcome.
     def method_missing(method_name, *args, &block)
-      if !@executed && input_object && input_object.attribute_names.map(&:to_sym).include?(method_name)
-        input_object.send(method_name)
-      elsif @executed && success? && success_object && success_object.attribute_names.map(&:to_sym).include?(method_name)
-        success_object.send(method_name)
-      elsif @executed && failure? && failure_object && failure_object.attribute_names.map(&:to_sym).include?(method_name)
-        failure_object.send(method_name)
+      method_string = method_name.to_s
+      if !@executed && input_object&.attribute_names&.include?(method_string)
+        input_object.send(method_string)
+      elsif @executed && success? && success_object&.attribute_names&.include?(method_string)
+        success_object.send(method_string)
+      elsif @executed && failure? && failure_object&.attribute_names&.include?(method_string)
+        failure_object.send(method_string)
       else
         super
       end
     end
 
     def respond_to_missing?(method_name, include_private = false)
-      (input_object && input_object.attribute_names.map(&:to_sym).include?(method_name)) ||
-        (success_object && success_object.attribute_names.map(&:to_sym).include?(method_name)) ||
-        (failure_object && failure_object.attribute_names.map(&:to_sym).include?(method_name)) ||
+      input_object&.attribute_names&.include?(method_name) ||
+        success_object&.attribute_names&.include?(method_name) ||
+        failure_object&.attribute_names&.include?(method_name) ||
         super
     end
 
