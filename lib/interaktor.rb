@@ -29,23 +29,13 @@ module Interaktor
     @interaction = self.class::Interaction.new(self, args)
   end
 
-  # @param args [Hash{Symbol=>Object}]
+  # @param args [Hash]
   def fail!(args = {})
-    # TODO
-    # if (disallowed_key = args.keys.find { |k| !self.class.failure_attributes.include?(k.to_sym) })
-    #   raise Interaktor::Error::UnknownAttributeError.new(self, disallowed_key)
-    # end
-
     @interaction.fail!(args)
   end
 
   # @param args [Hash]
   def success!(args = {})
-    # TODO
-    # if (disallowed_key = args.keys.find { |k| !self.class.success_attributes.include?(k.to_sym) })
-    #   raise Interaktor::Error::UnknownAttributeError.new(self, disallowed_key)
-    # end
-
     @interaction.success!(args)
   end
 

@@ -39,12 +39,6 @@ module Interaktor::Organizer
     #
     # @return [void]
     def call
-      # TODO: Not sure how to achieve this with ActiveModel not making it easy
-      # to determine if a given attribute can be nil or not (is it required or
-      # not?) - easy to do at the time of interaction start, but not in advance
-      # like this
-      # check_attribute_flow_valid
-
       latest_interaction = nil
 
       self.class.organized.each do |interaktor|
