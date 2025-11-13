@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name = "interaktor"
-  spec.version = "0.5.1"
+  spec.version = "0.6.0.pre"
 
   spec.author = "Taylor Thurlow"
   spec.email = "thurlow@hey.com"
