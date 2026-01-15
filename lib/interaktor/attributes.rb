@@ -6,10 +6,6 @@ module Interaktor
     include ::ActiveModel::Serialization
     include ::ActiveModel::Validations
 
-    if defined?(::ActiveModel::Attributes::Normalization)
-      include ::ActiveModel::Attributes::Normalization
-    end
-
     DISALLOWED_ATTRIBUTE_NAMES = instance_methods
       .map { |m| m.to_s.freeze }
       .freeze
