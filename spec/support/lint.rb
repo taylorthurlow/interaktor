@@ -214,6 +214,23 @@ RSpec.shared_examples "lint" do |interaktor_class|
       expect { result.bar }.to raise_error(NoMethodError)
     end
 
+    it "lets the interaktor read its attributes when it is rolled back" do
+      foo_in_rollback = nil
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        input { attribute :foo }
+
+        after { raise "after hook failed" }
+
+        define_method(:rollback) { foo_in_rollback = foo }
+      end
+
+      expect {
+        interaktor.call(foo: "bar")
+      }.to raise_error("after hook failed")
+
+      expect(foo_in_rollback).to eq "bar"
+    end
+
     it "disallows specifically disallowed attribute names" do
       expect {
         FakeInteraktor.build_interaktor(type: interaktor_class) do

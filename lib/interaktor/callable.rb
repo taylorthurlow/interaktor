@@ -23,7 +23,7 @@ module Interaktor::Callable
         klass.check_for_disallowed_attribute_names!
 
         klass.attribute_names.each do |name|
-          define_method(name) { @interaction.send(name) }
+          define_method(name) { @interaction.input_object.send(name) }
         end
       end
     end
