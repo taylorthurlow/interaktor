@@ -17,6 +17,21 @@ RSpec.shared_examples "lint" do |interaktor_class|
       }.to raise_error(Interaktor::Error::UnknownAttributeError)
     end
 
+    it "raises the failure of an interaktor that it calls with .call!" do
+      inner_interaktor = FakeInteraktor.build_interaktor("InnerInteraktor") do
+        define_method(:call) { fail! }
+      end
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        define_method(:call) { inner_interaktor.call! }
+      end
+
+      expect {
+        interaktor.call
+      }.to raise_error(Interaktor::Failure) { |error|
+        expect(error.interaction).to be_an inner_interaktor::Interaction
+      }
+    end
+
     it "fails when a non-hash or non-context argument is passed" do
       interaktor = FakeInteraktor.build_interaktor(type: interaktor_class)
 
@@ -63,9 +78,9 @@ RSpec.shared_examples "lint" do |interaktor_class|
     end
 
     it "rescues failure" do
-      instance = FakeInteraktor.build_interaktor(type: interaktor_class).new
-
-      expect(instance).to receive(:run!).and_raise(Interaktor::Failure)
+      instance = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        define_method(:call) { fail! }
+      end.new
 
       expect {
         instance.run

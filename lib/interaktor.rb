@@ -63,7 +63,10 @@ module Interaktor
   # context is failed or any error is raised, the context is rolled back.
   def run
     run!
-  rescue Interaktor::Failure
+  rescue Interaktor::Failure => e
+    # A failure of another interaktor, which this one called with `.call!`, is
+    # an error for this interaktor rather than a failure of it.
+    raise if !e.interaction.equal?(@interaction)
   end
 
   # Invoke an Interaktor instance along with all defined hooks, typically used
