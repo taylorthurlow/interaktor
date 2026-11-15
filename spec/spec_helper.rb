@@ -24,9 +24,9 @@ require "simplecov"
 SimpleCov.start do
   enable_coverage :branch
 
-  add_filter "/spec/"
-  add_filter "/vendor/"
-  add_filter "/lib/interaktor/error"
+  skip "/spec/"
+  skip "/vendor/"
+  skip "/lib/interaktor/error"
 end
 
 Bundler.require(:default, :test)
