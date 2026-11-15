@@ -655,4 +655,44 @@ RSpec.shared_examples "lint" do |interaktor_class|
       }.to raise_error "Failure block already defined"
     end
   end
+
+  describe "hooks" do
+    it "raises an exception when a before hook calls #success!" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        before { success! }
+      end
+
+      expect {
+        interaktor.call
+      }.to raise_error(Interaktor::Error::SuccessInHookError) { |error|
+        expect(error.interaktor).to be interaktor
+      }
+    end
+
+    it "raises an exception when an around hook calls #success!" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        around { |_run_interaktor| success! }
+      end
+
+      expect {
+        interaktor.call
+      }.to raise_error(Interaktor::Error::SuccessInHookError)
+    end
+
+    it "lets an around hook run an interaktor that calls #success!" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        success { attribute :foo }
+
+        around { |run_interaktor| run_interaktor.call }
+
+        def call
+          success!(foo: "bar")
+        end
+      end
+
+      result = interaktor.call
+
+      expect(result.foo).to eq "bar"
+    end
+  end
 end

@@ -208,6 +208,8 @@ end
 
 If `#fail!` is called, any code defined in the hook after the call to the interaktor will not be run.
 
+A hook can call `#fail!`, but not `#success!`. Only the `call` method of an interaktor can call `#success!`.
+
 #### Hook sequence
 
 Before hooks are invoked in the order in which they were defined while after hooks are invoked in the opposite order. Around hooks are invoked outside of any defined before and after hooks. For example:

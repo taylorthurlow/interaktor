@@ -202,6 +202,21 @@ RSpec.describe Interaktor::Organizer do
       end
     end
 
+    it "raises an exception when an organized interaktor calls #success! in a hook" do
+      organizer = FakeInteraktor.build_interaktor(type: described_class)
+      interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+        before { success! }
+      end
+
+      allow(organizer).to receive(:organized).and_return([interaktor1])
+
+      expect {
+        organizer.call
+      }.to raise_error(Interaktor::Error::SuccessInHookError) { |error|
+        expect(error.interaktor).to be interaktor1
+      }
+    end
+
     it "raises an exception if the organizer's last interaktor does not include the organizer's success attributes" do
       organizer = FakeInteraktor.build_interaktor(type: described_class) do
         success do

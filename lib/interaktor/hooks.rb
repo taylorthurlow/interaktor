@@ -325,6 +325,16 @@ module Interaktor::Hooks
   #
   # Returns nothing.
   def run_hook(hook, *args)
-    hook.is_a?(Symbol) ? send(hook, *args) : instance_exec(*args, &hook)
+    hook_finished = false
+
+    # `success!` ends the interaktor by throwing `:early_return`. A throw from
+    # inside `call` is caught before it gets here, so a throw caught here came
+    # from the hook itself.
+    catch(:early_return) do
+      hook.is_a?(Symbol) ? send(hook, *args) : instance_exec(*args, &hook)
+      hook_finished = true
+    end
+
+    raise Interaktor::Error::SuccessInHookError.new(self.class) if !hook_finished
   end
 end
