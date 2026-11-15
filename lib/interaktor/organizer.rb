@@ -36,15 +36,36 @@ module Interaktor::Organizer
   module InstanceMethods
     # Invoke the organized Interaktors. An Interaktor::Organizer is expected
     # NOT to define its own `#call` in favor of this default implementation.
+    # Fails if an organized interaktor fails.
+    #
+    # @raises [Interaktor::Failure] if an organized interaktor fails
     #
     # @return [void]
     def call
+      # An organizer that declares failure attributes must build them from the
+      # failed interaction of an organized interaktor, so it must define
+      # `failure_attributes_from`. One that declares none has nothing to build.
+      declares_failure_attributes = !!defined?(self.class::FailureAttributesModel)
+      if declares_failure_attributes != respond_to?(:failure_attributes_from, true)
+        raise Interaktor::Error::InvalidOrganizerFailureDefinitionError.new(self.class)
+      end
+
       latest_interaction = nil
 
       self.class.organized.each do |interaktor|
-        catch(:early_return) do
-          latest_interaction = interaktor.call!(latest_interaction || @interaction)
+        # `.call` raises the failure of any other interaktor that the organized
+        # interaktor calls, so a failed interaction here is always its own.
+        interaction = interaktor.call(latest_interaction || @interaction)
+
+        if interaction.failure?
+          if declares_failure_attributes
+            fail!(failure_attributes_from(interaction) || {})
+          else
+            fail!
+          end
         end
+
+        latest_interaction = interaction
       end
 
       if defined?(self.class::SuccessAttributesModel)

@@ -345,6 +345,42 @@ Any arguments which are _not_ accepted by the next interaktor (listed as an inpu
 If the organizer specifies any success attributes, the final interaktor in the
 organized list must also specify those success attributes.
 
+#### Failure
+
+If any one of the organized interaktors fails, the organizer fails too.
+
+An organizer declares its own failure attributes, like any other interaktor. The contract is between the caller and the organizer, not with whatever interaktors happen to be called by the organizer. As a result, the organizer's failure attributes don't need to match the failure attributes of the organized interaktors in any way. An organizer that declares failure attributes must define a `#failure_attributes_from` method. The method takes the interaction of the organized interaktor that failed, and returns a hash of failure attributes for the organizer.
+
+```ruby
+class PlaceOrder
+  include Interaktor::Organizer
+
+  failure do
+    attribute :reason
+    validates :reason, inclusion: [:invalid_order, :card_declined]
+
+    attribute :decline_code
+  end
+
+  organize CreateOrder, ChargeCard, SendThankYou
+
+  def failure_attributes_from(failed_interaction)
+    case failed_interaction
+    when CreateOrder::Interaction
+      {reason: :invalid_order}
+    when ChargeCard::Interaction
+      {reason: :card_declined, decline_code: failed_interaction.decline_code}
+    end
+  end
+end
+```
+
+Every interaktor class has an automatically-defined `Interaction` class. The failure attributes of that interaktor are available on the interaction.
+
+The returned attributes are validated like the attributes passed to `fail!`. If the method returns `nil`, the organizer fails with every failure attribute set to `nil`. In the example above, that would raise `Interaktor::Error::AttributeValidationError`, because `reason` would be missing. To treat a failure as an error instead, raise an exception from the method.
+
+An organizer without failure attributes fails with no attributes, and must not define `failure_attributes_from`.
+
 #### Rollback
 
 If any one of the organized interaktors fails, the organizer stops. If the `ChargeCard` interaktor fails, `SendThankYou` is never called.

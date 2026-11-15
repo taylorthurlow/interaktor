@@ -73,8 +73,8 @@ RSpec.describe Interaktor::Organizer do
 
       allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2])
 
-      expect(interaktor1).to receive(:call!).once.ordered.and_call_original
-      expect(interaktor2).to receive(:call!).once.ordered.and_call_original
+      expect(interaktor1).to receive(:call).once.ordered.and_call_original
+      expect(interaktor2).to receive(:call).once.ordered.and_call_original
 
       result = organizer.call(foo: "asdf")
 
@@ -104,8 +104,8 @@ RSpec.describe Interaktor::Organizer do
 
       allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2])
 
-      expect(interaktor1).to receive(:call!).once.ordered.and_call_original
-      expect(interaktor2).to receive(:call!).once.ordered.and_call_original
+      expect(interaktor1).to receive(:call).once.ordered.and_call_original
+      expect(interaktor2).to receive(:call).once.ordered.and_call_original
 
       organizer.call(foo: "whatever")
     end
@@ -124,8 +124,8 @@ RSpec.describe Interaktor::Organizer do
 
       allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2])
 
-      expect(interaktor1).to receive(:call!).once.ordered.and_call_original
-      expect(interaktor2).to receive(:call!).once.ordered.and_call_original
+      expect(interaktor1).to receive(:call).once.ordered.and_call_original
+      expect(interaktor2).to receive(:call).once.ordered.and_call_original
 
       organizer.call(foo: "whatever")
     end
@@ -153,8 +153,8 @@ RSpec.describe Interaktor::Organizer do
 
       allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2])
 
-      expect(interaktor1).to receive(:call!).once.ordered.and_call_original
-      expect(interaktor2).to receive(:call!).once.ordered.and_call_original
+      expect(interaktor1).to receive(:call).once.ordered.and_call_original
+      expect(interaktor2).to receive(:call).once.ordered.and_call_original
 
       organizer.call(foo: "whatever")
     end
@@ -214,6 +214,233 @@ RSpec.describe Interaktor::Organizer do
         organizer.call
       }.to raise_error(Interaktor::Error::SuccessInHookError) { |error|
         expect(error.interaktor).to be interaktor1
+      }
+    end
+
+    context "when an organized interaktor fails" do
+      it "fails without attributes and doesn't call the later interaktors when the organizer declares no failure attributes" do
+        organizer = FakeInteraktor.build_interaktor(type: described_class)
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+          failure { attribute :reason }
+
+          def call
+            fail!(reason: :nope)
+          end
+        end
+        interaktor2 = FakeInteraktor.build_interaktor("Interaktor2")
+
+        allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2])
+
+        expect(interaktor2).not_to receive(:call)
+
+        result = organizer.call
+
+        expect(result.failure?).to be true
+        expect(result.failure_object).to be nil
+      end
+
+      it "fails with the attributes the organizer builds from the failed interaction" do
+        organizer = FakeInteraktor.build_interaktor(type: described_class) do
+          failure do
+            attribute :reason
+            validates :reason, inclusion: [:interaktor2_failed]
+
+            attribute :detail
+          end
+
+          def failure_attributes_from(interaction)
+            case interaction
+            when Interaktor2::Interaction
+              {reason: :interaktor2_failed, detail: interaction.message}
+            end
+          end
+        end
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1")
+        interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
+          failure { attribute :message }
+
+          def call
+            fail!(message: "it broke")
+          end
+        end
+
+        allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2])
+
+        result = organizer.call
+
+        expect(result.failure?).to be true
+        expect(result.reason).to eq :interaktor2_failed
+        expect(result.detail).to eq "it broke"
+      end
+
+      it "raises Interaktor::Failure for the organizer interaction from .call!" do
+        organizer = FakeInteraktor.build_interaktor(type: described_class) do
+          failure { attribute :reason }
+
+          def failure_attributes_from(interaction)
+            {reason: :interaktor1_failed}
+          end
+        end
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+          def call
+            fail!
+          end
+        end
+
+        allow(organizer).to receive(:organized).and_return([interaktor1])
+
+        expect {
+          organizer.call!
+        }.to raise_error(Interaktor::Failure) { |error|
+          expect(error.interaction).to be_an organizer::Interaction
+          expect(error.interaction.reason).to eq :interaktor1_failed
+        }
+      end
+
+      it "raises when the failure attributes that the organizer builds aren't valid" do
+        organizer = FakeInteraktor.build_interaktor(type: described_class) do
+          failure do
+            attribute :reason
+            validates :reason, presence: true
+          end
+
+          def failure_attributes_from(interaction)
+            nil
+          end
+        end
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+          def call
+            fail!
+          end
+        end
+
+        allow(organizer).to receive(:organized).and_return([interaktor1])
+
+        expect {
+          organizer.call
+        }.to raise_error(Interaktor::Error::AttributeValidationError) { |error|
+          expect(error.interaktor).to be_an organizer
+          expect(error.validation_errors).to eq(reason: ["can't be blank"])
+        }
+      end
+
+      it "passes the failure of a nested organizer to the outer organizer" do
+        inner_organizer = FakeInteraktor.build_interaktor("InnerOrganizer", type: described_class) do
+          failure { attribute :inner_reason }
+
+          def failure_attributes_from(interaction)
+            {inner_reason: :interaktor1_failed}
+          end
+        end
+        outer_organizer = FakeInteraktor.build_interaktor("OuterOrganizer", type: described_class) do
+          failure { attribute :outer_reason }
+
+          def failure_attributes_from(interaction)
+            case interaction
+            when InnerOrganizer::Interaction
+              {outer_reason: :"inner_#{interaction.inner_reason}"}
+            end
+          end
+        end
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+          def call
+            fail!
+          end
+        end
+
+        allow(inner_organizer).to receive(:organized).and_return([interaktor1])
+        allow(outer_organizer).to receive(:organized).and_return([inner_organizer])
+
+        result = outer_organizer.call
+
+        expect(result.outer_reason).to eq :inner_interaktor1_failed
+      end
+
+      it "raises the failure of an interaktor that an organized interaktor calls with .call!" do
+        organizer = FakeInteraktor.build_interaktor(type: described_class) do
+          failure { attribute :reason }
+
+          def failure_attributes_from(interaction)
+            {reason: :interaktor1_failed}
+          end
+        end
+        inner_interaktor = FakeInteraktor.build_interaktor("InnerInteraktor") do
+          define_method(:call) { fail! }
+        end
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+          define_method(:call) { inner_interaktor.call! }
+        end
+
+        allow(organizer).to receive(:organized).and_return([interaktor1])
+
+        expect {
+          organizer.call
+        }.to raise_error(Interaktor::Failure) { |error|
+          expect(error.interaction).to be_an inner_interaktor::Interaction
+        }
+      end
+
+      it "raises the failure of a second instance of an organized interaktor that it calls with .call!" do
+        organizer = FakeInteraktor.build_interaktor(type: described_class) do
+          input { attribute :depth }
+
+          failure { attribute :reason }
+
+          def failure_attributes_from(interaction)
+            {reason: :interaktor1_failed}
+          end
+        end
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+          input { attribute :depth }
+
+          def call
+            if depth == 0
+              self.class.call!(depth: 1)
+            else
+              fail!
+            end
+          end
+        end
+
+        allow(organizer).to receive(:organized).and_return([interaktor1])
+
+        expect {
+          organizer.call(depth: 0)
+        }.to raise_error(Interaktor::Failure) { |error|
+          expect(error.interaction).to be_an interaktor1::Interaction
+        }
+      end
+    end
+
+    it "raises an exception if the organizer declares failure attributes but doesn't build them" do
+      organizer = FakeInteraktor.build_interaktor(type: described_class) do
+        failure { attribute :reason }
+      end
+      interaktor1 = FakeInteraktor.build_interaktor("Interaktor1")
+
+      allow(organizer).to receive(:organized).and_return([interaktor1])
+
+      expect {
+        organizer.call
+      }.to raise_error(Interaktor::Error::InvalidOrganizerFailureDefinitionError) { |error|
+        expect(error.interaktor).to be organizer
+      }
+    end
+
+    it "raises an exception if the organizer builds failure attributes but doesn't declare them" do
+      organizer = FakeInteraktor.build_interaktor(type: described_class) do
+        def failure_attributes_from(interaction)
+          {}
+        end
+      end
+      interaktor1 = FakeInteraktor.build_interaktor("Interaktor1")
+
+      allow(organizer).to receive(:organized).and_return([interaktor1])
+
+      expect {
+        organizer.call
+      }.to raise_error(Interaktor::Error::InvalidOrganizerFailureDefinitionError) { |error|
+        expect(error.interaktor).to be organizer
       }
     end
 
