@@ -240,6 +240,14 @@ RSpec.shared_examples "lint" do |interaktor_class|
       }.to raise_error(ArgumentError, /disallowed attribute name/i)
     end
 
+    it "disallows the names of methods of the interaktor" do
+      expect {
+        FakeInteraktor.build_interaktor(type: interaktor_class) do
+          input { attribute :run }
+        end
+      }.to raise_error(ArgumentError, /disallowed attribute name\(s\): run/i)
+    end
+
     it "raises an exception when input block is provided more than once" do
       expect {
         FakeInteraktor.build_interaktor(type: interaktor_class) do
@@ -264,6 +272,87 @@ RSpec.shared_examples "lint" do |interaktor_class|
 
       expect(result.success?).to be true
       expect(result.foo).to eq "bar"
+    end
+
+    it "lets the interaktor read its attributes when it is rolled back" do
+      foo_in_rollback = nil
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        success { attribute :foo }
+
+        after { raise "after hook failed" }
+
+        def call
+          success!(foo: "bar")
+        end
+
+        define_method(:rollback) { foo_in_rollback = foo }
+      end
+
+      expect {
+        interaktor.call
+      }.to raise_error("after hook failed")
+
+      expect(foo_in_rollback).to eq "bar"
+    end
+
+    it "lets the interaktor read an input attribute of the same name until it calls #success!" do
+      foo_in_call = nil
+      foo_in_after_hook = nil
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        success { attribute :foo }
+        input { attribute :foo }
+
+        after { foo_in_after_hook = foo }
+
+        define_method(:call) do
+          foo_in_call = foo
+          success!(foo: "new")
+        end
+      end
+
+      interaktor.call(foo: "old")
+
+      expect(foo_in_call).to eq "old"
+      expect(foo_in_after_hook).to eq "new"
+    end
+
+    it "doesn't hide a method of the same name from a module that the interaktor includes" do
+      helpers = Module.new do
+        def foo
+          "from the module"
+        end
+      end
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        include helpers
+
+        success { attribute :foo }
+
+        def call
+          success!(foo: foo)
+        end
+      end
+
+      result = interaktor.call
+
+      expect(result.foo).to eq "from the module"
+    end
+
+    it "doesn't replace a method of the same name defined before the success block" do
+      interaktor = FakeInteraktor.build_interaktor(type: interaktor_class) do
+        def foo
+          "from the method"
+        end
+
+        success { attribute :foo }
+
+        def call
+          success!(foo: foo)
+        end
+      end
+
+      result = interaktor.call
+
+      expect(result.foo).to eq "from the method"
     end
 
     it "raises an exception when the attribute is required and not provided" do
@@ -399,6 +488,14 @@ RSpec.shared_examples "lint" do |interaktor_class|
           success { attribute :errors }
         end
       }.to raise_error(ArgumentError, /disallowed attribute name/i)
+    end
+
+    it "disallows the names of methods of the interaktor" do
+      expect {
+        FakeInteraktor.build_interaktor(type: interaktor_class) do
+          success { attribute :run }
+        end
+      }.to raise_error(ArgumentError, /disallowed attribute name\(s\): run/i)
     end
 
     it "raises an exception when success block is provided more than once" do

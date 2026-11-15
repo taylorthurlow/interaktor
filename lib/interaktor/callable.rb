@@ -22,9 +22,7 @@ module Interaktor::Callable
 
         klass.check_for_disallowed_attribute_names!
 
-        klass.attribute_names.each do |name|
-          define_method(name) { @interaction.input_object.send(name) }
-        end
+        klass.attribute_names.each { |name| define_attribute_reader(name) }
       end
     end
 
@@ -53,6 +51,8 @@ module Interaktor::Callable
         const_set(:SuccessAttributesModel, klass)
 
         klass.check_for_disallowed_attribute_names!
+
+        klass.attribute_names.each { |name| define_attribute_reader(name) }
       end
     end
 
@@ -79,6 +79,32 @@ module Interaktor::Callable
     end
 
     private
+
+    # Define a method on the interaktor that returns the value of an input or
+    # success attribute.
+    #
+    # @param name [String]
+    #
+    # @return [void]
+    def define_attribute_reader(name)
+      # Rejects the name of a method that the gem defines on every interaktor,
+      # because the attribute method would replace it.
+      gem_method = [Interaktor, Interaktor::Hooks].any? do |mod|
+        mod.method_defined?(name) || mod.private_method_defined?(name)
+      end
+      raise ArgumentError, "Disallowed attribute name(s): #{name}" if gem_method
+
+      self::AttributeMethods.define_method(name) do
+        # Reads the attribute objects directly, because the interaction stops
+        # returning input attributes once it has finished. A success attribute
+        # replaces an input attribute of the same name once the interaktor has
+        # succeeded.
+        [@interaction.success_object, @interaction.input_object]
+          .compact
+          .find { |attributes| attributes.attribute_names.include?(name) }
+          &.send(name)
+      end
+    end
 
     # The main execution method triggered by the public `#call` or `#call!`
     # methods.

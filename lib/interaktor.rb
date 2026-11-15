@@ -17,6 +17,12 @@ module Interaktor
 
       interaction_class = Class.new(Interaktor::Interaction)
       base.const_set(:Interaction, interaction_class)
+
+      # Holds the methods that return input and success attributes. Methods
+      # defined in the interaktor class, or in modules that it includes later,
+      # take priority over them.
+      base.const_set(:AttributeMethods, Module.new)
+      include base::AttributeMethods
     end
   end
 
