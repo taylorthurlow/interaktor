@@ -42,6 +42,8 @@ module Interaktor::Organizer
     #
     # @return [void]
     def call
+      @finished_interactions = []
+
       # An organizer that declares failure attributes must build them from the
       # failed interaction of an organized interaktor, so it must define
       # `failure_attributes_from`. One that declares none has nothing to build.
@@ -65,6 +67,7 @@ module Interaktor::Organizer
           end
         end
 
+        @finished_interactions << interaction
         latest_interaction = interaction
       end
 
@@ -76,6 +79,28 @@ module Interaktor::Organizer
             &.slice(*self.class::SuccessAttributesModel.attribute_names) || {}
         )
       end
+    rescue
+      # Rolls back when an organized interaktor raises, and also when one fails,
+      # because the organizer then raises its own failure.
+      roll_back_finished_interactions
+      raise
+    end
+
+    # Roll back the organized interaktors, in reverse order. An organizer that
+    # defines its own `#rollback` must call `super`.
+    #
+    # @return [void]
+    def rollback
+      roll_back_finished_interactions
+    end
+
+    private
+
+    # Roll back the organized interaktors that finished, in reverse order.
+    #
+    # @return [void]
+    def roll_back_finished_interactions
+      @finished_interactions&.reverse_each(&:rollback!)
     end
   end
 end

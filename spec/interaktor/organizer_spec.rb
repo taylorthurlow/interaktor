@@ -412,6 +412,168 @@ RSpec.describe Interaktor::Organizer do
       end
     end
 
+    context "when an organized interaktor fails or raises" do
+      it "rolls back the finished interaktors in reverse order, but not the failed one" do
+        steps = []
+        organizer = FakeInteraktor.build_interaktor(type: described_class)
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+          define_method(:rollback) { steps << :rollback1 }
+        end
+        interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
+          define_method(:rollback) { steps << :rollback2 }
+        end
+        interaktor3 = FakeInteraktor.build_interaktor("Interaktor3") do
+          define_method(:call) { fail! }
+          define_method(:rollback) { steps << :rollback3 }
+        end
+
+        allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2, interaktor3])
+
+        organizer.call
+
+        expect(steps).to eq [:rollback2, :rollback1]
+      end
+
+      it "rolls back the finished interaktors when a later interaktor raises" do
+        steps = []
+        organizer = FakeInteraktor.build_interaktor(type: described_class)
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+          define_method(:rollback) { steps << :rollback1 }
+        end
+        interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
+          define_method(:call) { raise "boom" }
+        end
+
+        allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2])
+
+        expect { organizer.call }.to raise_error("boom")
+        expect(steps).to eq [:rollback1]
+      end
+
+      it "rolls back the finished interaktors when a later interaktor lets the failure of another interaktor through" do
+        steps = []
+        organizer = FakeInteraktor.build_interaktor(type: described_class)
+        inner_interaktor = FakeInteraktor.build_interaktor("InnerInteraktor") do
+          define_method(:call) { fail! }
+        end
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+          define_method(:rollback) { steps << :rollback1 }
+        end
+        interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
+          define_method(:call) { inner_interaktor.call! }
+        end
+
+        allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2])
+
+        expect { organizer.call }.to raise_error(Interaktor::Failure)
+        expect(steps).to eq [:rollback1]
+      end
+
+      it "rolls back the interaktors of a finished nested organizer" do
+        steps = []
+        inner_organizer = FakeInteraktor.build_interaktor("InnerOrganizer", type: described_class)
+        outer_organizer = FakeInteraktor.build_interaktor("OuterOrganizer", type: described_class)
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+          define_method(:rollback) { steps << :rollback1 }
+        end
+        interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
+          define_method(:rollback) { steps << :rollback2 }
+        end
+        interaktor3 = FakeInteraktor.build_interaktor("Interaktor3") do
+          define_method(:call) { fail! }
+        end
+
+        allow(inner_organizer).to receive(:organized).and_return([interaktor1, interaktor2])
+        allow(outer_organizer).to receive(:organized).and_return([inner_organizer, interaktor3])
+
+        outer_organizer.call
+
+        expect(steps).to eq [:rollback2, :rollback1]
+      end
+
+      it "rolls back each finished interaktor once when an interaktor in a nested organizer fails" do
+        steps = []
+        inner_organizer = FakeInteraktor.build_interaktor("InnerOrganizer", type: described_class)
+        outer_organizer = FakeInteraktor.build_interaktor("OuterOrganizer", type: described_class)
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+          define_method(:rollback) { steps << :rollback1 }
+        end
+        interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
+          define_method(:rollback) { steps << :rollback2 }
+        end
+        interaktor3 = FakeInteraktor.build_interaktor("Interaktor3") do
+          define_method(:call) { fail! }
+        end
+
+        allow(inner_organizer).to receive(:organized).and_return([interaktor2, interaktor3])
+        allow(outer_organizer).to receive(:organized).and_return([interaktor1, inner_organizer])
+
+        outer_organizer.call
+
+        expect(steps).to eq [:rollback2, :rollback1]
+      end
+
+      it "doesn't roll back anything when the organizer succeeds" do
+        steps = []
+        organizer = FakeInteraktor.build_interaktor(type: described_class)
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+          define_method(:rollback) { steps << :rollback1 }
+        end
+
+        allow(organizer).to receive(:organized).and_return([interaktor1])
+
+        organizer.call
+
+        expect(steps).to eq []
+      end
+
+      it "doesn't run the custom rollback of the organizer that failed" do
+        steps = []
+        organizer = FakeInteraktor.build_interaktor(type: described_class) do
+          define_method(:rollback) do
+            super()
+            steps << :organizer_rollback
+          end
+        end
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+          define_method(:rollback) { steps << :rollback1 }
+        end
+        interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
+          define_method(:call) { fail! }
+        end
+
+        allow(organizer).to receive(:organized).and_return([interaktor1, interaktor2])
+
+        organizer.call
+
+        expect(steps).to eq [:rollback1]
+      end
+
+      it "runs the custom rollback of a finished nested organizer" do
+        steps = []
+        inner_organizer = FakeInteraktor.build_interaktor("InnerOrganizer", type: described_class) do
+          define_method(:rollback) do
+            super()
+            steps << :inner_organizer_rollback
+          end
+        end
+        outer_organizer = FakeInteraktor.build_interaktor("OuterOrganizer", type: described_class)
+        interaktor1 = FakeInteraktor.build_interaktor("Interaktor1") do
+          define_method(:rollback) { steps << :rollback1 }
+        end
+        interaktor2 = FakeInteraktor.build_interaktor("Interaktor2") do
+          define_method(:call) { fail! }
+        end
+
+        allow(inner_organizer).to receive(:organized).and_return([interaktor1])
+        allow(outer_organizer).to receive(:organized).and_return([inner_organizer, interaktor2])
+
+        outer_organizer.call
+
+        expect(steps).to eq [:rollback1, :inner_organizer_rollback]
+      end
+    end
+
     it "raises an exception if the organizer declares failure attributes but doesn't build them" do
       organizer = FakeInteraktor.build_interaktor(type: described_class) do
         failure { attribute :reason }

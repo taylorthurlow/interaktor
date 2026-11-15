@@ -421,6 +421,8 @@ end
 
 **NOTE:** The interaktor that fails is _not_ rolled back. Because every interaktor should have a single purpose, there should be no need to clean up after any failed interaktor. This is why the rollback method above can access the `order` success attribute - rollback is only called on successful interaktors.
 
+The interaktors that had already run are also rolled back when a later interaktor raises an exception instead of failing. This only happens for exceptions that inherit from `StandardError`. Other exceptions, such as `Interrupt`, the exception that `Timeout.timeout` raises, or `Sidekiq::Shutdown`, usually mean the process or thread is being stopped, and running more code at that point is risky. When one of those is raised, nothing is rolled back.
+
 ## Testing interaktors
 
 When written correctly, an interaktor is easy to test because it only _does_ one thing. Take the following interaktor:
